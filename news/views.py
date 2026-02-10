@@ -69,18 +69,25 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
         responses={200: NewsPageDetailSerializer}
     )
     def retrieve(self, request, *args, **kwargs):
-        # Increment view count
         instance = self.get_object()
-        instance.views_count += 1
-        instance.save(update_fields=['views_count'])
+        
+        # Only increment view count once per session per post
+        viewed_posts = request.session.get('viewed_posts', [])
+        if instance.pk not in viewed_posts:
+            instance.views_count += 1
+            instance.save(update_fields=['views_count'])
+            viewed_posts.append(instance.pk)
+            request.session['viewed_posts'] = viewed_posts
+        
         return super().retrieve(request, *args, **kwargs)
     
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        # Filter by locale/language
-        locale = self.request.query_params.get('locale', 'uz')
-        queryset = queryset.filter(locale__language_code=locale)
+        # Filter by locale/language (optional - if not specified, return all)
+        locale = self.request.query_params.get('locale')
+        if locale:
+            queryset = queryset.filter(locale__language_code=locale)
         
         # Filter by post type
         post_type = self.request.query_params.get('type')
@@ -104,12 +111,14 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def pinned(self, request):
         """Get pinned items: /api/news/pinned/"""
-        locale = request.query_params.get('locale', 'uz')
-        queryset = NewsPage.objects.live().public().filter(
-            locale__language_code=locale,
-            is_pinned=True
-        ).order_by('-published_date')
+        queryset = NewsPage.objects.live().public().filter(is_pinned=True)
         
+        # Filter by locale if specified
+        locale = request.query_params.get('locale')
+        if locale:
+            queryset = queryset.filter(locale__language_code=locale)
+        
+        queryset = queryset.order_by('-published_date')
         serializer = NewsPageListSerializer(queryset, many=True)
         return Response(serializer.data)
     
@@ -130,11 +139,14 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def announcements(self, request):
         """Get announcements: /api/news/announcements/"""
-        locale = request.query_params.get('locale', 'uz')
-        queryset = NewsPage.objects.live().public().filter(
-            locale__language_code=locale,
-            post_type='announcement'
-        ).order_by('-is_pinned', '-published_date')
+        queryset = NewsPage.objects.live().public().filter(post_type='announcement')
+        
+        # Filter by locale if specified
+        locale = request.query_params.get('locale')
+        if locale:
+            queryset = queryset.filter(locale__language_code=locale)
+        
+        queryset = queryset.order_by('-is_pinned', '-published_date')
         
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -222,17 +234,27 @@ class TelegramWebhookView(APIView):
                 post_type = 'announcement'
                 break
         
-        # Extract title (first line or first 100 chars)
-        lines = text.strip().split('\n')
-        title = lines[0][:100] if lines else 'Telegram Post'
+        # Strip hashtags from text
+        clean_text = re.sub(r'#\w+', '', text).strip()
         
-        # Remove hashtags from title
-        title = re.sub(r'#\w+', '', title).strip()
+        # Extract title (first line)
+        lines = clean_text.split('\n')
+        title = lines[0][:100].strip() if lines else 'Telegram Post'
         if not title:
             title = f"Telegram {post_type.capitalize()} {message_id}"
         
-        # Create excerpt (first 200 chars without hashtags)
-        excerpt = re.sub(r'#\w+', '', text[:200]).strip()
+        # Body = everything after title line
+        body_lines = [l.strip() for l in lines[1:] if l.strip()]
+        body_text = '\n'.join(body_lines)
+        
+        # Excerpt from body, max 200 chars
+        excerpt = body_text[:200].strip() if body_text else title
+        
+        # Content as HTML paragraphs
+        if body_text:
+            content_html = ''.join(f'<p>{line}</p>' for line in body_lines)
+        else:
+            content_html = ''
         
         # Find parent page (NewsIndexPage)
         try:
@@ -272,7 +294,7 @@ class TelegramWebhookView(APIView):
                 slug=slug,
                 post_type=post_type,
                 excerpt=excerpt,
-                content=text,
+                content=content_html,
                 published_date=timezone.now(),
                 telegram_message_id=message_id,
                 telegram_chat_id=chat_id,
