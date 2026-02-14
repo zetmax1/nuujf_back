@@ -13,6 +13,7 @@ class TelegramBotConfigViewSet(SnippetViewSet):
     menu_name = "telegram_bot"
     menu_order = 300
     add_to_admin_menu = True
+    inspect_view_enabled = True
     list_display = ['name', 'is_active', 'auto_publish', 'updated_at']
     list_filter = ['is_active', 'auto_publish']
     search_fields = ['name']
@@ -39,6 +40,7 @@ class TelegramSyncLogViewSet(SnippetViewSet):
     menu_name = "telegram_logs"
     menu_order = 301
     add_to_admin_menu = True
+    inspect_view_enabled = True
     list_display = ['telegram_message_id', 'status', 'news_page', 'created_at']
     list_filter = ['status', 'created_at']
     search_fields = ['telegram_message_id']

@@ -24,6 +24,7 @@ BASE_DIR = PROJECT_DIR.parent
 # Application definition
 
 INSTALLED_APPS = [
+    'common',
     'news',
     'sections',
     'faculties',
@@ -182,6 +183,12 @@ WAGTAILSEARCH_BACKENDS = {
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 WAGTAILADMIN_BASE_URL = "http://example.com"
+
+# RBAC Settings ---> dynamic role based access control
+WAGTAIL_MODERATION_ENABLED = True
+WAGTAILADMIN_NOTIFICATION_INCLUDE_SUPERUSERS = False
+WAGTAIL_PASSWORD_MANAGEMENT_ENABLED = True
+WAGTAIL_PASSWORD_RESET_ENABLED = True
 
 # Allowed file extensions for documents in the document library.
 # This can be omitted to allow all files, but note that this may present a security risk
