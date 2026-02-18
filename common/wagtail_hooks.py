@@ -150,6 +150,16 @@ def register_departments_menu_item():
     )
 
 
+@hooks.register('register_admin_menu_item')
+def register_leaders_menu_item():
+    return MenuItem(
+        'Rahbariyat',
+        '/admin/snippets/sections/leader/',
+        icon_name='user',
+        order=195,
+    )
+
+
 # ============================================
 # CUSTOM DASHBOARD FOR NON-SUPERUSERS
 # ============================================

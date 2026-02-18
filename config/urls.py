@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/', include('faculties.urls')),
     path('api/news/', include('news.urls')),
     path('api/common/', include('common.urls')),
+    path('api/sections/', include('sections.urls')),
     path('api/v2/', api_router.urls),
     
     # OpenAPI Schema and Documentation
