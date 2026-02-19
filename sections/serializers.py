@@ -1,4 +1,6 @@
+import re
 from rest_framework import serializers
+from wagtail.rich_text import expand_db_html
 from .models import Leader, StructureSection, SectionMember
 
 
@@ -76,6 +78,7 @@ class StructureSectionDetailSerializer(serializers.ModelSerializer):
     leader = LeaderSerializer(read_only=True)
     members = SectionMemberSerializer(many=True, read_only=True)
     children = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = StructureSection
@@ -84,8 +87,25 @@ class StructureSectionDetailSerializer(serializers.ModelSerializer):
             'order', 'leader', 'members', 'children',
         ]
 
+    def get_description(self, obj):
+        """Render Wagtail internal rich text to proper HTML with absolute image URLs."""
+        if obj.description:
+            html = expand_db_html(obj.description)
+            # Make relative image/media URLs absolute
+            request = self.context.get('request')
+            if request:
+                def make_absolute(match):
+                    url = match.group(1)
+                    if url.startswith('/'):
+                        return f'src="{request.build_absolute_uri(url)}"'
+                    return match.group(0)
+                html = re.sub(r'src="([^"]*)"', make_absolute, html)
+            return html
+        return ''
+
     def get_children(self, obj):
         children = obj.children.filter(is_active=True).order_by('order', 'name')
         return StructureSectionSerializer(
             children, many=True, context=self.context
         ).data
+
