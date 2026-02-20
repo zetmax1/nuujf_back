@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'news',
     'sections',
     'faculties',
+    'navigation',
     "home",
     "search",
     "wagtail.contrib.forms",

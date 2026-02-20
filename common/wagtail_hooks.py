@@ -160,6 +160,16 @@ def register_leaders_menu_item():
     )
 
 
+@hooks.register('register_admin_menu_item')
+def register_navigation_menu_item():
+    return MenuItem(
+        'Navigatsiya',
+        '/admin/snippets/navigation/navitem/',
+        icon_name='list-ul',
+        order=100,
+    )
+
+
 # ============================================
 # CUSTOM DASHBOARD FOR NON-SUPERUSERS
 # ============================================
