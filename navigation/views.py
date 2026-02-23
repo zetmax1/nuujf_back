@@ -13,7 +13,8 @@ class NavItemListView(ListAPIView):
         return NavItem.objects.filter(
             is_active=True
         ).prefetch_related(
-            'children', 'linked_page', 'children__linked_page'
+            'children', 'linked_page', 'children__linked_page',
+            'linked_activity_category', 'children__linked_activity_category'
         ).order_by('order', 'pk')
 
 

@@ -7,6 +7,8 @@ from wagtail.snippets.models import register_snippet
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 
+from activities.models import ActivityCategory
+
 
 # All known frontend pages — admins pick from this dropdown
 KNOWN_PAGES = [
@@ -29,6 +31,7 @@ KNOWN_PAGES = [
     ('payment', "To'lov-kontrakt"),
     ('news', 'Yangiliklar'),
     ('announcements', "E'lonlar"),
+    ('activities', 'Faoliyatlar'),
 ]
 
 
@@ -109,6 +112,14 @@ class NavItem(ClusterableModel):
         related_name='nav_items',
         help_text="Dinamik sahifaga havola (yangi sahifa uchun)"
     )
+    linked_activity_category = models.ForeignKey(
+        ActivityCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='nav_items',
+        help_text="Faoliyat kategoriyasiga havola"
+    )
     order = models.IntegerField(
         default=0,
         help_text="Tartib raqami (kichik = birinchi)"
@@ -123,6 +134,7 @@ class NavItem(ClusterableModel):
         MultiFieldPanel([
             FieldPanel('page_id'),
             FieldPanel('linked_page'),
+            FieldPanel('linked_activity_category'),
         ], heading="Havola turi (bittasini tanlang)"),
         FieldPanel('order'),
         FieldPanel('is_active'),
@@ -136,27 +148,39 @@ class NavItem(ClusterableModel):
 
     def clean(self):
         super().clean()
-        if self.page_id and self.linked_page:
+        # Count how many link types are set
+        link_count = sum([
+            bool(self.page_id),
+            bool(self.linked_page),
+            bool(self.linked_activity_category),
+        ])
+        if link_count > 1:
             raise ValidationError(
-                "Faqat bittasini tanlang: mavjud sahifa YOKI dinamik sahifa."
+                "Faqat bittasini tanlang: mavjud sahifa, dinamik sahifa, YOKI faoliyat kategoriyasi."
             )
 
     @property
     def link_type(self):
         if self.linked_page:
             return 'dynamic'
+        if self.linked_activity_category:
+            return 'activity-category'
         return 'page'
 
     @property
     def resolved_page_id(self):
         if self.linked_page:
-            return f"dynamic-page"
+            return 'dynamic-page'
+        if self.linked_activity_category:
+            return 'activity-category'
         return self.page_id
 
     @property
     def resolved_slug(self):
         if self.linked_page:
             return self.linked_page.slug
+        if self.linked_activity_category:
+            return self.linked_activity_category.slug
         return None
 
     def __str__(self):
@@ -190,6 +214,14 @@ class SubNavItem(models.Model):
         related_name='sub_nav_items',
         help_text="Dinamik sahifaga havola (yangi sahifa uchun)"
     )
+    linked_activity_category = models.ForeignKey(
+        ActivityCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sub_nav_items',
+        help_text="Faoliyat kategoriyasiga havola"
+    )
     order = models.IntegerField(
         default=0,
         help_text="Tartib raqami"
@@ -204,6 +236,7 @@ class SubNavItem(models.Model):
         MultiFieldPanel([
             FieldPanel('page_id'),
             FieldPanel('linked_page'),
+            FieldPanel('linked_activity_category'),
         ], heading="Havola turi"),
         FieldPanel('order'),
         FieldPanel('is_active'),
@@ -216,27 +249,38 @@ class SubNavItem(models.Model):
 
     def clean(self):
         super().clean()
-        if self.page_id and self.linked_page:
+        link_count = sum([
+            bool(self.page_id),
+            bool(self.linked_page),
+            bool(self.linked_activity_category),
+        ])
+        if link_count > 1:
             raise ValidationError(
-                "Faqat bittasini tanlang: mavjud sahifa YOKI dinamik sahifa."
+                "Faqat bittasini tanlang: mavjud sahifa, dinamik sahifa, YOKI faoliyat kategoriyasi."
             )
 
     @property
     def link_type(self):
         if self.linked_page:
             return 'dynamic'
+        if self.linked_activity_category:
+            return 'activity-category'
         return 'page'
 
     @property
     def resolved_page_id(self):
         if self.linked_page:
             return 'dynamic-page'
+        if self.linked_activity_category:
+            return 'activity-category'
         return self.page_id
 
     @property
     def resolved_slug(self):
         if self.linked_page:
             return self.linked_page.slug
+        if self.linked_activity_category:
+            return self.linked_activity_category.slug
         return None
 
     def __str__(self):
