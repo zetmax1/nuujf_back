@@ -172,6 +172,15 @@ class ActivityPage(index.Indexed, models.Model):
         ordering = ['order', 'title']
         unique_together = ['category', 'slug']
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        super().clean()
+        if self.parent and self.parent.category_id != self.category_id:
+            raise ValidationError({
+                'parent': "Yuqori sahifa shu kategoriyaga tegishli bo'lishi kerak. "
+                          f"Tanlangan sahifa '{self.parent.category.title}' kategoriyasiga tegishli."
+            })
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.title)
