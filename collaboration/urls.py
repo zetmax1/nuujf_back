@@ -6,6 +6,7 @@ from .views import (
     PartnerOrganizationDetailView,
     CollaborationProjectListView,
     CollaborationProjectDetailView,
+    CollaborationPageDetailView,
 )
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     path('<slug:slug>/', CollaborationTypeDetailView.as_view(), name='collaboration-type-detail'),
     path('partners/<slug:slug>/', PartnerOrganizationDetailView.as_view(), name='partner-detail'),
     path('projects/<slug:slug>/', CollaborationProjectDetailView.as_view(), name='collaboration-project-detail'),
+    path('<slug:type_slug>/pages/<slug:page_slug>/', CollaborationPageDetailView.as_view(), name='collaboration-page-detail'),
 ]

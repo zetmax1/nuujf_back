@@ -1,7 +1,7 @@
 import re
 from rest_framework import serializers
 from wagtail.rich_text import expand_db_html
-from .models import CollaborationType, PartnerOrganization, CollaborationProject
+from .models import CollaborationType, PartnerOrganization, CollaborationProject, CollaborationPage
 
 
 def expand_rich_text(raw_html, request=None):
@@ -58,6 +58,7 @@ class PartnerOrganizationListSerializer(serializers.ModelSerializer):
 class PartnerOrganizationDetailSerializer(serializers.ModelSerializer):
     """Full detail serializer for a single partner organization."""
     logo_url = serializers.SerializerMethodField()
+    cover_image_url = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     collaboration_type_title = serializers.CharField(
         source='collaboration_type.title', read_only=True
@@ -70,7 +71,7 @@ class PartnerOrganizationDetailSerializer(serializers.ModelSerializer):
         model = PartnerOrganization
         fields = [
             'id', 'name', 'slug', 'country', 'website',
-            'logo_url', 'description',
+            'logo_url', 'cover_image_url', 'description',
             'collaboration_type_title', 'collaboration_type_slug',
             'order',
         ]
@@ -87,6 +88,15 @@ class PartnerOrganizationDetailSerializer(serializers.ModelSerializer):
     def get_description(self, obj):
         request = self.context.get('request')
         return expand_rich_text(obj.description, request)
+
+    def get_cover_image_url(self, obj):
+        if obj.cover_image:
+            request = self.context.get('request')
+            url = obj.cover_image.file.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
 
 
 # ============================================
@@ -193,13 +203,14 @@ class CollaborationTypeDetailSerializer(serializers.ModelSerializer):
     cover_image_url = serializers.SerializerMethodField()
     partners = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
+    pages = serializers.SerializerMethodField()
 
     class Meta:
         model = CollaborationType
         fields = [
             'id', 'title', 'slug', 'icon',
             'description', 'cover_image_url', 'order',
-            'partners', 'projects',
+            'partners', 'projects', 'pages',
         ]
 
     def get_description(self, obj):
@@ -230,3 +241,83 @@ class CollaborationTypeDetailSerializer(serializers.ModelSerializer):
         return CollaborationProjectListSerializer(
             active_projects, many=True, context=self.context
         ).data
+
+    def get_pages(self, obj):
+        """Return only direct child pages (parent=null)."""
+        direct_pages = obj.pages.filter(
+            is_active=True, parent__isnull=True
+        ).order_by('order', 'title')
+        return CollaborationPageListSerializer(
+            direct_pages, many=True, context=self.context
+        ).data
+
+
+# ============================================
+# COLLABORATION PAGE SERIALIZERS
+# ============================================
+
+class CollaborationPageListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for listing pages within a collaboration type."""
+    has_children = serializers.SerializerMethodField()
+    cover_image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CollaborationPage
+        fields = ['id', 'title', 'slug', 'cover_image_url', 'order', 'has_children']
+
+    def get_has_children(self, obj):
+        return obj.children.filter(is_active=True).exists()
+
+    def get_cover_image_url(self, obj):
+        if obj.cover_image:
+            request = self.context.get('request')
+            url = obj.cover_image.file.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+
+
+class CollaborationPageDetailSerializer(serializers.ModelSerializer):
+    """Full detail serializer — includes content, children, breadcrumbs."""
+    content = serializers.SerializerMethodField()
+    children = serializers.SerializerMethodField()
+    breadcrumbs = serializers.SerializerMethodField()
+    cover_image_url = serializers.SerializerMethodField()
+    collaboration_type_title = serializers.CharField(
+        source='collaboration_type.title', read_only=True
+    )
+    collaboration_type_slug = serializers.CharField(
+        source='collaboration_type.slug', read_only=True
+    )
+
+    class Meta:
+        model = CollaborationPage
+        fields = [
+            'id', 'title', 'slug', 'content',
+            'cover_image_url', 'order',
+            'collaboration_type_title', 'collaboration_type_slug',
+            'children', 'breadcrumbs',
+        ]
+
+    def get_content(self, obj):
+        request = self.context.get('request')
+        return expand_rich_text(obj.content, request)
+
+    def get_children(self, obj):
+        children = obj.children.filter(is_active=True).order_by('order', 'title')
+        return CollaborationPageListSerializer(
+            children, many=True, context=self.context
+        ).data
+
+    def get_breadcrumbs(self, obj):
+        return obj.get_breadcrumbs()
+
+    def get_cover_image_url(self, obj):
+        if obj.cover_image:
+            request = self.context.get('request')
+            url = obj.cover_image.file.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None

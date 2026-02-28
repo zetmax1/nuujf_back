@@ -130,6 +130,14 @@ class PartnerOrganization(index.Indexed, models.Model):
         related_name='+',
         help_text="Hamkor tashkilot logotipi"
     )
+    cover_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text="Hamkorlik haqida muqova rasm (banner)"
+    )
     description = RichTextField(
         blank=True,
         help_text="Hamkor tashkilot haqida batafsil ma'lumot"
@@ -160,6 +168,7 @@ class PartnerOrganization(index.Indexed, models.Model):
             FieldPanel('country'),
             FieldPanel('website'),
             FieldPanel('logo'),
+            FieldPanel('cover_image'),
         ], heading="Asosiy ma'lumotlar"),
         FieldPanel('description'),
         MultiFieldPanel([
@@ -301,3 +310,130 @@ class CollaborationProject(index.Indexed, models.Model):
 
     def __str__(self):
         return self.title
+
+
+class CollaborationPage(index.Indexed, models.Model):
+    """
+    Rich content page within a collaboration type.
+    Supports unlimited nesting via self-referencing parent FK.
+    Examples: "Talabalar almashinuvi", "Erasmus+ grantlar", "Study in Uzbekistan".
+    """
+
+    title = models.CharField(
+        max_length=255,
+        help_text="Sahifa sarlavhasi"
+    )
+    slug = models.SlugField(
+        max_length=255,
+        blank=True,
+        help_text="URL uchun identifikator (avtomatik yaratiladi)"
+    )
+    collaboration_type = models.ForeignKey(
+        CollaborationType,
+        on_delete=models.CASCADE,
+        related_name='pages',
+        help_text="Tegishli hamkorlik turi"
+    )
+    parent = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='children',
+        help_text="Yuqori sahifa (bo'sh = hamkorlik turining to'g'ridan-to'g'ri bolasi)"
+    )
+    content = RichTextField(
+        blank=True,
+        help_text="Sahifa mazmuni"
+    )
+    cover_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text="Sahifa uchun muqova rasm"
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text="Tartib raqami (0 = birinchi)"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Faolmi? (O'chirilsa saytda ko'rinmaydi)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Wagtail search
+    search_fields = [
+        index.SearchField('title'),
+        index.FilterField('is_active'),
+        index.FilterField('collaboration_type'),
+    ]
+
+    panels = [
+        MultiFieldPanel([
+            FieldPanel('title'),
+            FieldPanel('collaboration_type'),
+            FieldPanel('parent'),
+            FieldPanel('cover_image'),
+        ], heading="Asosiy ma'lumotlar"),
+        FieldPanel('content'),
+        MultiFieldPanel([
+            FieldPanel('order'),
+            FieldPanel('is_active'),
+        ], heading="Sozlamalar"),
+    ]
+
+    class Meta:
+        verbose_name = "Hamkorlik sahifasi"
+        verbose_name_plural = "Hamkorlik sahifalari"
+        ordering = ['order', 'title']
+        unique_together = ['collaboration_type', 'slug']
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        super().clean()
+        if self.parent and self.parent.collaboration_type_id != self.collaboration_type_id:
+            raise ValidationError({
+                'parent': "Yuqori sahifa shu hamkorlik turiga tegishli bo'lishi kerak. "
+                          f"Tanlangan sahifa '{self.parent.collaboration_type.title}' turiga tegishli."
+            })
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            if not base_slug:
+                base_slug = 'sahifa'
+            slug = base_slug
+            counter = 1
+            while (CollaborationPage.objects
+                   .filter(collaboration_type=self.collaboration_type, slug=slug)
+                   .exclude(pk=self.pk)
+                   .exists()):
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_breadcrumbs(self):
+        """Build breadcrumb trail from this page up to the collaboration type."""
+        crumbs = []
+        current = self
+        while current is not None:
+            crumbs.insert(0, {
+                'title': current.title,
+                'slug': current.slug,
+            })
+            current = current.parent
+        # Add collaboration type as the first crumb
+        crumbs.insert(0, {
+            'title': self.collaboration_type.title,
+            'slug': self.collaboration_type.slug,
+        })
+        return crumbs
+
+    def __str__(self):
+        return f"{self.collaboration_type.title} → {self.title}"
+

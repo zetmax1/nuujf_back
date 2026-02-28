@@ -2,7 +2,7 @@ from rest_framework import generics
 from rest_framework.exceptions import NotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from .models import CollaborationType, PartnerOrganization, CollaborationProject
+from .models import CollaborationType, PartnerOrganization, CollaborationProject, CollaborationPage
 from .serializers import (
     CollaborationTypeListSerializer,
     CollaborationTypeDetailSerializer,
@@ -10,6 +10,7 @@ from .serializers import (
     PartnerOrganizationDetailSerializer,
     CollaborationProjectListSerializer,
     CollaborationProjectDetailSerializer,
+    CollaborationPageDetailSerializer,
 )
 
 
@@ -62,6 +63,7 @@ class CollaborationTypeDetailView(generics.RetrieveAPIView):
         ).select_related('cover_image').prefetch_related(
             'partners', 'partners__logo', 'partners__collaboration_type',
             'projects', 'projects__cover_image', 'projects__collaboration_type',
+            'pages', 'pages__cover_image', 'pages__children',
         )
 
     @extend_schema(
@@ -131,7 +133,7 @@ class PartnerOrganizationDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         return PartnerOrganization.objects.filter(
             is_active=True
-        ).select_related('collaboration_type', 'logo')
+        ).select_related('collaboration_type', 'logo', 'cover_image')
 
     @extend_schema(
         summary="Hamkor tashkilot tafsilotlari",
@@ -206,6 +208,48 @@ class CollaborationProjectDetailView(generics.RetrieveAPIView):
         summary="Hamkorlik loyihasi tafsilotlari",
         description="Bitta hamkorlik loyihasining to'liq mazmuni va hamkorlarini qaytaradi.",
         responses={200: CollaborationProjectDetailSerializer},
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+# ============================================
+# COLLABORATION PAGE VIEWS
+# ============================================
+
+@extend_schema(tags=['Collaboration'])
+class CollaborationPageDetailView(generics.RetrieveAPIView):
+    """
+    Retrieve a single collaboration page by type slug and page slug.
+
+    Returns full content, child pages, and breadcrumb trail.
+    """
+    serializer_class = CollaborationPageDetailSerializer
+    authentication_classes = []
+    permission_classes = []
+
+    def get_object(self):
+        type_slug = self.kwargs['type_slug']
+        page_slug = self.kwargs['page_slug']
+        try:
+            page = (
+                CollaborationPage.objects
+                .filter(is_active=True, collaboration_type__is_active=True)
+                .select_related('collaboration_type', 'parent', 'cover_image')
+                .prefetch_related('children', 'children__cover_image')
+                .get(collaboration_type__slug=type_slug, slug=page_slug)
+            )
+        except CollaborationPage.DoesNotExist:
+            raise NotFound("Sahifa topilmadi")
+        return page
+
+    @extend_schema(
+        summary="Hamkorlik sahifasi tafsilotlari",
+        description=(
+            "Bitta hamkorlik sahifasining to'liq mazmuni, "
+            "bolalari va breadcrumb yo'lini qaytaradi."
+        ),
+        responses={200: CollaborationPageDetailSerializer},
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
