@@ -58,11 +58,17 @@ class CollaborationType(index.Indexed, models.Model):
 
     panels = [
         MultiFieldPanel([
-            FieldPanel('title'),
+            FieldPanel('title_uz'),
+            FieldPanel('title_ru'),
+            FieldPanel('title_en'),
             FieldPanel('icon'),
             FieldPanel('cover_image'),
         ], heading="Asosiy ma'lumotlar"),
-        FieldPanel('description'),
+        MultiFieldPanel([
+            FieldPanel('description_uz'),
+            FieldPanel('description_ru'),
+            FieldPanel('description_en'),
+        ], heading="Tavsif (3 tilda)"),
         MultiFieldPanel([
             FieldPanel('order'),
             FieldPanel('is_active'),
@@ -163,14 +169,22 @@ class PartnerOrganization(index.Indexed, models.Model):
 
     panels = [
         MultiFieldPanel([
-            FieldPanel('name'),
+            FieldPanel('name_uz'),
+            FieldPanel('name_ru'),
+            FieldPanel('name_en'),
             FieldPanel('collaboration_type'),
-            FieldPanel('country'),
+            FieldPanel('country_uz'),
+            FieldPanel('country_ru'),
+            FieldPanel('country_en'),
             FieldPanel('website'),
             FieldPanel('logo'),
             FieldPanel('cover_image'),
         ], heading="Asosiy ma'lumotlar"),
-        FieldPanel('description'),
+        MultiFieldPanel([
+            FieldPanel('description_uz'),
+            FieldPanel('description_ru'),
+            FieldPanel('description_en'),
+        ], heading="Tavsif (3 tilda)"),
         MultiFieldPanel([
             FieldPanel('order'),
             FieldPanel('is_active'),
@@ -273,11 +287,17 @@ class CollaborationProject(index.Indexed, models.Model):
 
     panels = [
         MultiFieldPanel([
-            FieldPanel('title'),
+            FieldPanel('title_uz'),
+            FieldPanel('title_ru'),
+            FieldPanel('title_en'),
             FieldPanel('collaboration_type'),
             FieldPanel('cover_image'),
         ], heading="Asosiy ma'lumotlar"),
-        FieldPanel('content'),
+        MultiFieldPanel([
+            FieldPanel('content_uz'),
+            FieldPanel('content_ru'),
+            FieldPanel('content_en'),
+        ], heading="Mazmun (3 tilda)"),
         MultiFieldPanel([
             FieldPanel('start_date'),
             FieldPanel('end_date'),
@@ -374,12 +394,18 @@ class CollaborationPage(index.Indexed, models.Model):
 
     panels = [
         MultiFieldPanel([
-            FieldPanel('title'),
+            FieldPanel('title_uz'),
+            FieldPanel('title_ru'),
+            FieldPanel('title_en'),
             FieldPanel('collaboration_type'),
             FieldPanel('parent'),
             FieldPanel('cover_image'),
         ], heading="Asosiy ma'lumotlar"),
-        FieldPanel('content'),
+        MultiFieldPanel([
+            FieldPanel('content_uz'),
+            FieldPanel('content_ru'),
+            FieldPanel('content_en'),
+        ], heading="Mazmun (3 tilda)"),
         MultiFieldPanel([
             FieldPanel('order'),
             FieldPanel('is_active'),

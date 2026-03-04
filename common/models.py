@@ -87,8 +87,12 @@ class Vacancy(index.Indexed, models.Model):
     # Wagtail admin panels
     panels = [
         MultiFieldPanel([
-            FieldPanel('title'),
-            FieldPanel('department'),
+            FieldPanel('title_uz'),
+            FieldPanel('title_ru'),
+            FieldPanel('title_en'),
+            FieldPanel('department_uz'),
+            FieldPanel('department_ru'),
+            FieldPanel('department_en'),
             FieldPanel('category'),
             FieldPanel('employment_type'),
         ], heading="Asosiy ma'lumotlar"),
@@ -96,8 +100,16 @@ class Vacancy(index.Indexed, models.Model):
             FieldPanel('salary_min', widget=forms.NumberInput(attrs={'step': '1', 'min': '0'})),
             FieldPanel('salary_max', widget=forms.NumberInput(attrs={'step': '1', 'min': '0'})),
         ], heading="Ish haqi"),
-        FieldPanel('description'),
-        FieldPanel('requirements'),
+        MultiFieldPanel([
+            FieldPanel('description_uz'),
+            FieldPanel('description_ru'),
+            FieldPanel('description_en'),
+        ], heading="Tavsif (3 tilda)"),
+        MultiFieldPanel([
+            FieldPanel('requirements_uz'),
+            FieldPanel('requirements_ru'),
+            FieldPanel('requirements_en'),
+        ], heading="Talablar (3 tilda)"),
         FieldPanel('is_active'),
     ]
 

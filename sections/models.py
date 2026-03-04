@@ -78,17 +78,29 @@ class Leader(index.Indexed, models.Model):
     # Wagtail admin panels
     panels = [
         MultiFieldPanel([
-            FieldPanel('full_name'),
-            FieldPanel('position'),
-            FieldPanel('academic_degree'),
+            FieldPanel('full_name_uz'),
+            FieldPanel('full_name_ru'),
+            FieldPanel('full_name_en'),
+            FieldPanel('position_uz'),
+            FieldPanel('position_ru'),
+            FieldPanel('position_en'),
+            FieldPanel('academic_degree_uz'),
+            FieldPanel('academic_degree_ru'),
+            FieldPanel('academic_degree_en'),
             FieldPanel('image'),
         ], heading="Asosiy ma'lumotlar"),
         MultiFieldPanel([
             FieldPanel('email'),
             FieldPanel('phone'),
-            FieldPanel('reception_days'),
+            FieldPanel('reception_days_uz'),
+            FieldPanel('reception_days_ru'),
+            FieldPanel('reception_days_en'),
         ], heading="Aloqa ma'lumotlari"),
-        FieldPanel('bio'),
+        MultiFieldPanel([
+            FieldPanel('bio_uz'),
+            FieldPanel('bio_ru'),
+            FieldPanel('bio_en'),
+        ], heading="Biografiya (3 tilda)"),
         MultiFieldPanel([
             FieldPanel('order'),
             FieldPanel('is_active'),
@@ -173,13 +185,19 @@ class StructureSection(index.Indexed, ClusterableModel):
     # Wagtail admin panels
     panels = [
         MultiFieldPanel([
-            FieldPanel('name'),
+            FieldPanel('name_uz'),
+            FieldPanel('name_ru'),
+            FieldPanel('name_en'),
             FieldPanel('slug'),
             FieldPanel('icon'),
             FieldPanel('parent'),
             FieldPanel('leader'),
         ], heading="Asosiy ma'lumotlar"),
-        FieldPanel('description'),
+        MultiFieldPanel([
+            FieldPanel('description_uz'),
+            FieldPanel('description_ru'),
+            FieldPanel('description_en'),
+        ], heading="Tavsif (3 tilda)"),
         InlinePanel('members', label="Bo'lim a'zolari"),
         MultiFieldPanel([
             FieldPanel('order'),
@@ -245,8 +263,12 @@ class SectionMember(Orderable, models.Model):
     )
 
     panels = [
-        FieldPanel('full_name'),
-        FieldPanel('position'),
+        FieldPanel('full_name_uz'),
+        FieldPanel('full_name_ru'),
+        FieldPanel('full_name_en'),
+        FieldPanel('position_uz'),
+        FieldPanel('position_ru'),
+        FieldPanel('position_en'),
         FieldPanel('email'),
         FieldPanel('phone'),
         FieldPanel('image'),

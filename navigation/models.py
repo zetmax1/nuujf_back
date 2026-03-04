@@ -61,9 +61,15 @@ class DynamicPage(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     panels = [
-        FieldPanel('title'),
+        FieldPanel('title_uz'),
+        FieldPanel('title_ru'),
+        FieldPanel('title_en'),
         FieldPanel('slug'),
-        FieldPanel('body'),
+        MultiFieldPanel([
+            FieldPanel('body_uz'),
+            FieldPanel('body_ru'),
+            FieldPanel('body_en'),
+        ], heading="Mazmun (3 tilda)"),
         FieldPanel('is_active'),
     ]
 
@@ -130,7 +136,9 @@ class NavItem(ClusterableModel):
     )
 
     panels = [
-        FieldPanel('title'),
+        FieldPanel('title_uz'),
+        FieldPanel('title_ru'),
+        FieldPanel('title_en'),
         MultiFieldPanel([
             FieldPanel('page_id'),
             FieldPanel('linked_page'),
@@ -232,7 +240,9 @@ class SubNavItem(models.Model):
     )
 
     panels = [
-        FieldPanel('title'),
+        FieldPanel('title_uz'),
+        FieldPanel('title_ru'),
+        FieldPanel('title_en'),
         MultiFieldPanel([
             FieldPanel('page_id'),
             FieldPanel('linked_page'),

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from modeltranslation.admin import TabbedTranslationAdmin
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 from .models import CollaborationType, PartnerOrganization, CollaborationProject, CollaborationPage
@@ -78,7 +79,7 @@ register_snippet(CollaborationSnippetGroup)
 # ============================================
 
 @admin.register(CollaborationType)
-class CollaborationTypeAdmin(admin.ModelAdmin):
+class CollaborationTypeAdmin(TabbedTranslationAdmin):
     list_display = ['title', 'slug', 'order', 'is_active']
     list_filter = ['is_active']
     search_fields = ['title']
@@ -98,7 +99,7 @@ class CollaborationTypeAdmin(admin.ModelAdmin):
 
 
 @admin.register(PartnerOrganization)
-class PartnerOrganizationAdmin(admin.ModelAdmin):
+class PartnerOrganizationAdmin(TabbedTranslationAdmin):
     list_display = ['name', 'country', 'collaboration_type', 'slug', 'order', 'is_active']
     list_filter = ['is_active', 'collaboration_type', 'country']
     search_fields = ['name', 'country']
@@ -118,7 +119,7 @@ class PartnerOrganizationAdmin(admin.ModelAdmin):
 
 
 @admin.register(CollaborationProject)
-class CollaborationProjectAdmin(admin.ModelAdmin):
+class CollaborationProjectAdmin(TabbedTranslationAdmin):
     list_display = ['title', 'collaboration_type', 'start_date', 'end_date', 'slug', 'order', 'is_active']
     list_filter = ['is_active', 'collaboration_type']
     search_fields = ['title']
@@ -142,7 +143,7 @@ class CollaborationProjectAdmin(admin.ModelAdmin):
 
 
 @admin.register(CollaborationPage)
-class CollaborationPageAdmin(admin.ModelAdmin):
+class CollaborationPageAdmin(TabbedTranslationAdmin):
     list_display = ['title', 'collaboration_type', 'parent', 'slug', 'order', 'is_active']
     list_filter = ['is_active', 'collaboration_type']
     search_fields = ['title']

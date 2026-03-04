@@ -58,11 +58,17 @@ class ActivityCategory(index.Indexed, models.Model):
     # Wagtail admin panels — slug is hidden (auto-generated)
     panels = [
         MultiFieldPanel([
-            FieldPanel('title'),
+            FieldPanel('title_uz'),
+            FieldPanel('title_ru'),
+            FieldPanel('title_en'),
             FieldPanel('icon'),
             FieldPanel('cover_image'),
         ], heading="Asosiy ma'lumotlar"),
-        FieldPanel('description'),
+        MultiFieldPanel([
+            FieldPanel('description_uz'),
+            FieldPanel('description_ru'),
+            FieldPanel('description_en'),
+        ], heading="Tavsif (3 tilda)"),
         MultiFieldPanel([
             FieldPanel('order'),
             FieldPanel('is_active'),
@@ -154,12 +160,18 @@ class ActivityPage(index.Indexed, models.Model):
     # Wagtail admin panels — slug is hidden (auto-generated)
     panels = [
         MultiFieldPanel([
-            FieldPanel('title'),
+            FieldPanel('title_uz'),
+            FieldPanel('title_ru'),
+            FieldPanel('title_en'),
             FieldPanel('category'),
             FieldPanel('parent'),
             FieldPanel('cover_image'),
         ], heading="Asosiy ma'lumotlar"),
-        FieldPanel('content'),
+        MultiFieldPanel([
+            FieldPanel('content_uz'),
+            FieldPanel('content_ru'),
+            FieldPanel('content_en'),
+        ], heading="Mazmun (3 tilda)"),
         MultiFieldPanel([
             FieldPanel('order'),
             FieldPanel('is_active'),

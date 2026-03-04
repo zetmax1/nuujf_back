@@ -1,4 +1,5 @@
 from django.contrib import admin
+from modeltranslation.admin import TabbedTranslationAdmin
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
 from .models import ActivityCategory, ActivityPage
@@ -47,7 +48,7 @@ register_snippet(ActivityPageSnippetViewSet)
 # ============================================
 
 @admin.register(ActivityCategory)
-class ActivityCategoryAdmin(admin.ModelAdmin):
+class ActivityCategoryAdmin(TabbedTranslationAdmin):
     list_display = ['title', 'slug', 'order', 'is_active']
     list_filter = ['is_active']
     search_fields = ['title']
@@ -67,7 +68,7 @@ class ActivityCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(ActivityPage)
-class ActivityPageAdmin(admin.ModelAdmin):
+class ActivityPageAdmin(TabbedTranslationAdmin):
     list_display = ['title', 'category', 'parent', 'slug', 'order', 'is_active']
     list_filter = ['is_active', 'category']
     search_fields = ['title']

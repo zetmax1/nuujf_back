@@ -1,4 +1,5 @@
 from django.contrib import admin
+from modeltranslation.admin import TabbedTranslationAdmin
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
 from .models import Vacancy, VacancyApplication
@@ -43,7 +44,7 @@ register_snippet(VacancyApplicationSnippetViewSet)
 # ============================================
 
 @admin.register(Vacancy)
-class VacancyAdmin(admin.ModelAdmin):
+class VacancyAdmin(TabbedTranslationAdmin):
     list_display = ['title', 'department', 'category', 'employment_type', 'is_active', 'created_at']
     list_filter = ['category', 'employment_type', 'is_active']
     search_fields = ['title', 'department']

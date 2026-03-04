@@ -24,6 +24,7 @@ BASE_DIR = PROJECT_DIR.parent
 # Application definition
 
 INSTALLED_APPS = [
+    'modeltranslation',
     'common',
     'news',
     'sections',
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
     'navigation',
     'activities',
     'collaboration',
+    'appeals',
     "home",
     "search",
     "wagtail.contrib.forms",
@@ -64,6 +66,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",

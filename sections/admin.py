@@ -1,4 +1,5 @@
 from django.contrib import admin
+from modeltranslation.admin import TabbedTranslationAdmin, TranslationTabularInline
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
 from .models import Leader, StructureSection, SectionMember
@@ -47,7 +48,7 @@ register_snippet(StructureSectionSnippetViewSet)
 # ============================================
 
 @admin.register(Leader)
-class LeaderAdmin(admin.ModelAdmin):
+class LeaderAdmin(TabbedTranslationAdmin):
     list_display = ['full_name', 'position', 'email', 'order', 'is_active']
     list_filter = ['is_active']
     search_fields = ['full_name', 'position']
@@ -68,7 +69,7 @@ class LeaderAdmin(admin.ModelAdmin):
     )
 
 
-class SectionMemberInline(admin.TabularInline):
+class SectionMemberInline(TranslationTabularInline):
     model = SectionMember
     extra = 1
     fields = ['full_name', 'position', 'email', 'phone', 'image', 'order']
@@ -76,7 +77,7 @@ class SectionMemberInline(admin.TabularInline):
 
 
 @admin.register(StructureSection)
-class StructureSectionAdmin(admin.ModelAdmin):
+class StructureSectionAdmin(TabbedTranslationAdmin):
     list_display = ['name', 'parent', 'leader', 'order', 'is_active']
     list_filter = ['is_active', 'parent']
     search_fields = ['name']
