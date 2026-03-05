@@ -32,6 +32,7 @@ KNOWN_PAGES = [
     ('news', 'Yangiliklar'),
     ('announcements', "E'lonlar"),
     ('activities', 'Faoliyatlar'),
+    ('appeal-director', 'Direktoga murojaat'),
 ]
 
 

@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/activities/', include('activities.urls')),
     path('api/collaboration/', include('collaboration.urls')),
     path('api/appeals/', include('appeals.urls')),
+    path('api/admission/', include('admission.urls')),
     path('api/v2/', api_router.urls),
     
     # OpenAPI Schema and Documentation

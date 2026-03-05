@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'activities',
     'collaboration',
     'appeals',
+    'admission',
     "home",
     "search",
     "wagtail.contrib.forms",
