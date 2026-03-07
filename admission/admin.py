@@ -88,3 +88,5 @@ class AdmissionQuotaAdmin(TabbedTranslationAdmin):
             'fields': ('order',)
         }),
     )
+
+
