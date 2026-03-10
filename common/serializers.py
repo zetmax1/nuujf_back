@@ -12,13 +12,11 @@ from .models import Vacancy, VacancyApplication
 # ============================================
 
 # Allowed file extensions
-ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx']
+ALLOWED_EXTENSIONS = ['pdf']
 
 # Allowed MIME types (real file type check, not just extension)
 ALLOWED_MIME_TYPES = {
     'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 }
 
 # Max file size: 5 MB
@@ -117,7 +115,7 @@ class VacancyApplicationSerializer(serializers.ModelSerializer):
     resume = serializers.FileField(
         required=True,
         validators=[FileExtensionValidator(allowed_extensions=ALLOWED_EXTENSIONS)],
-        help_text="Faqat PDF, DOC, DOCX formatlar. Maksimum 5 MB.",
+        help_text="Faqat PDF format. Maksimum 5 MB.",
     )
 
     class Meta:
@@ -157,33 +155,66 @@ class VacancyApplicationSerializer(serializers.ModelSerializer):
 
     def validate_resume(self, value):
         """
-        Deep file validation:
+        Deep PDF file validation:
         1. Check file size
-        2. Check real MIME type via python-magic (not just extension)
+        2. Check real MIME type via python-magic
+        3. Parse PDF to test validity
+        4. Scan for malicious embedded scripts
         """
-        # Check file size
+        # 1. Check file size
         if value.size > MAX_FILE_SIZE:
             raise serializers.ValidationError(
                 f"Fayl hajmi juda katta. Maksimum: {MAX_FILE_SIZE // (1024 * 1024)} MB"
             )
 
-        # Read first bytes to detect real MIME type
-        try:
-            file_head = value.read(2048)
-            value.seek(0)  # Reset file pointer
+        # 2. Check extension early
+        ext = os.path.splitext(value.name)[1].lower().lstrip('.')
+        if ext not in ALLOWED_EXTENSIONS:
+            raise serializers.ValidationError(
+                "Faqat PDF formati qabul qilinadi."
+            )
 
-            mime = magic.from_buffer(file_head, mime=True)
+        # Read file completely to scan bytes
+        value.seek(0)
+        raw_bytes = value.read()
+        value.seek(0)
+
+        # 3. Check real MIME type and magic bytes
+        try:
+            mime = magic.from_buffer(raw_bytes, mime=True)
             if mime not in ALLOWED_MIME_TYPES:
                 raise serializers.ValidationError(
-                    f"Fayl turi ruxsat etilmagan ({mime}). "
-                    f"Faqat PDF, DOC, DOCX formatlar qabul qilinadi."
+                    f"Fayl turi ruxsat etilmagan ({mime}). Faqat PDF hujjat ruxsat etilgan."
                 )
         except ImportError:
-            # If python-magic is not installed, fall back to extension-only check
-            ext = os.path.splitext(value.name)[1].lower().lstrip('.')
-            if ext not in ALLOWED_EXTENSIONS:
-                raise serializers.ValidationError(
-                    "Faqat PDF, DOC, DOCX formatlar qabul qilinadi."
-                )
+            pass
+
+        if not raw_bytes.startswith(b"%PDF-"):
+            raise serializers.ValidationError("Fayl yaroqli PDF emas.")
+
+        # 4. Try to parse using pypdf
+        from pypdf import PdfReader
+        from io import BytesIO
+        try:
+            reader = PdfReader(BytesIO(raw_bytes))
+            _ = len(reader.pages)  # force parse
+        except Exception:
+            raise serializers.ValidationError("PDF faylni o'qib bo'lmadi (shikastlangan).")
+
+        # 5. Scan for embedded scripts / JavaScript inside PDF
+        suspicious_patterns = [
+            b"/JavaScript",
+            b"/JS",
+            b"/AA",          # auto-action
+            b"/OpenAction",
+            b"/Launch",
+            b"/EmbeddedFile",
+            b"<?php",
+            b"<script",
+        ]
+        raw_lower = raw_bytes.lower()
+        for pattern in suspicious_patterns:
+            if pattern in raw_lower:
+                raise serializers.ValidationError("Faylda shubhali (zararli) matn qismlari aniqlandi.")
 
         return value
