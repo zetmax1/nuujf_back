@@ -214,8 +214,9 @@ class UniversityNewsBot:
                 response += f"   _{item.excerpt[:100]}..._\n"
             response += f"   📅 {pub_date}\n\n"
         
-        # Add inline buttons for more details
-        keyboard = [[InlineKeyboardButton("🌐 View on Website", url="http://your-domain.com/news")]]
+        # Add inline buttons for more details (use website_url from config)
+        website_url = await self._get_website_url()
+        keyboard = [[InlineKeyboardButton("🌐 View on Website", url=f"{website_url}/news")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await update.message.reply_text(
@@ -240,7 +241,8 @@ class UniversityNewsBot:
                 response += f"   _{item.excerpt[:100]}..._\n"
             response += f"   📅 {pub_date}\n\n"
         
-        keyboard = [[InlineKeyboardButton("🌐 View on Website", url="http://your-domain.com/news")]]
+        website_url = await self._get_website_url()
+        keyboard = [[InlineKeyboardButton("🌐 View on Website", url=f"{website_url}/news")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await update.message.reply_text(
@@ -572,14 +574,14 @@ class UniversityNewsBot:
                 # Multiple photos - first is cover, rest are gallery
                 if isinstance(photo_files, list):
                     for idx, photo_file in enumerate(photo_files):
-                        img_id = await sync_to_async(self._save_telegram_image)(photo_file, f"{title} {idx+1}")
+                        img_id = await self._save_telegram_image_async(photo_file, f"{title} {idx+1}")
                         if img_id:
                             if idx == 0:
                                 cover_image_id = img_id
                             gallery_image_ids.append(img_id)
                 else:
                     # Single photo
-                    cover_image_id = await sync_to_async(self._save_telegram_image)(photo_files, title)
+                    cover_image_id = await self._save_telegram_image_async(photo_files, title)
             elif config.default_news_image_id and post_type == 'news':
                 cover_image_id = config.default_news_image_id
             elif config.default_announcement_image_id and post_type == 'announcement':
@@ -670,47 +672,43 @@ class UniversityNewsBot:
         # Create news with photo
         await self.create_news_from_message(update, context, photo_files=photo_file)
     
-    def _save_telegram_image(self, photo_file, title):
-        """Save Telegram photo to Wagtail Image (sync function)"""
+    async def _save_telegram_image_async(self, photo_file, title):
+        """Download Telegram photo and save as Wagtail Image (async)"""
         from wagtail.images.models import Image
-        import requests
         
         try:
-            # Get the download URL
-            file_url = getattr(photo_file, 'file_path', None)
-            if not file_url:
-                logger.error(f"No file_path for photo_file: {photo_file}")
-                return None
-            
-            logger.info(f"Downloading image from: {file_url}")
-            
-            # Download photo
-            response = requests.get(file_url, timeout=30)
-            response.raise_for_status()
-            
-            logger.info(f"Downloaded image: {len(response.content)} bytes")
-            
-            # Save to temp file
+            # Use python-telegram-bot's built-in download method
+            # This handles the API token and full URL construction automatically
             with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
-                temp_file.write(response.content)
                 temp_path = temp_file.name
             
-            # Create Wagtail Image
-            with open(temp_path, 'rb') as f:
-                wagtail_image = Image(
-                    title=f"Telegram: {title}"[:255],
-                    file=File(f, name=f"telegram_{photo_file.file_id[:20]}.jpg")
-                )
-                wagtail_image.save()
+            await photo_file.download_to_drive(temp_path)
+            logger.info(f"Downloaded image to: {temp_path}")
             
-            # Clean up temp file
-            os.unlink(temp_path)
+            # Save to Wagtail Image (sync operation)
+            @sync_to_async
+            def save_to_wagtail():
+                with open(temp_path, 'rb') as f:
+                    file_id = getattr(photo_file, 'file_id', 'unknown')
+                    wagtail_image = Image(
+                        title=f"Telegram: {title}"[:255],
+                        file=File(f, name=f"telegram_{file_id[:20]}.jpg")
+                    )
+                    wagtail_image.save()
+                
+                # Clean up temp file
+                os.unlink(temp_path)
+                
+                logger.info(f"Saved Wagtail image ID: {wagtail_image.id}")
+                return wagtail_image.id
             
-            logger.info(f"Saved Wagtail image ID: {wagtail_image.id}")
-            return wagtail_image.id
+            return await save_to_wagtail()
             
         except Exception as e:
             logger.error(f"Error saving Telegram image: {e}", exc_info=True)
+            # Clean up on failure
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
             return None
     
     async def button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -721,6 +719,18 @@ class UniversityNewsBot:
         # Handle different callback data
         # Can be extended for more interactive features
         
+    async def _get_website_url(self):
+        """Get website URL from bot config"""
+        @sync_to_async
+        def fetch_url():
+            from .models import TelegramBotConfig
+            config = TelegramBotConfig.objects.filter(is_active=True).first()
+            if config and hasattr(config, 'website_url') and config.website_url:
+                return config.website_url.rstrip('/')
+            return "https://example.com"
+        
+        return await fetch_url()
+    
     async def is_admin(self, user_id: int) -> bool:
         """Check if user is admin"""
         @sync_to_async

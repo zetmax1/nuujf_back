@@ -9,7 +9,7 @@ from django.http import HttpResponseForbidden
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from wagtail import hooks
-from wagtail.admin.menu import MenuItem
+from wagtail.admin.menu import Menu, MenuItem, SubmenuMenuItem
 from wagtail.admin.ui.components import Component
 
 
@@ -102,14 +102,43 @@ def _get_page_explorer_url(page_model_class):
     return reverse('wagtailadmin_explore_root')
 
 
+news_submenu = Menu(register_hook_name='register_news_submenu_item', construct_hook_name='construct_news_submenu')
+
 @hooks.register('register_admin_menu_item')
-def register_news_menu_item():
-    from news.models import NewsIndexPage
-    return MenuItem(
+def register_news_menu():
+    return SubmenuMenuItem(
         'Yangiliklar',
-        _get_page_explorer_url(NewsIndexPage),
+        news_submenu,
         icon_name='doc-full-inverse',
         order=200,
+    )
+
+@hooks.register('register_news_submenu_item')
+def register_news_pages_link():
+    from news.models import NewsIndexPage
+    return MenuItem(
+        'Asosiy sahifa (Yangiliklar)',
+        _get_page_explorer_url(NewsIndexPage),
+        icon_name='folder-inverse',
+        order=100
+    )
+
+@hooks.register('register_news_submenu_item')
+def register_telegram_bot_link():
+    return MenuItem(
+        'Telegram Bot',
+        reverse('wagtailsnippets_news_telegrambotconfig:list'),
+        icon_name='site',
+        order=200
+    )
+
+@hooks.register('register_news_submenu_item')
+def register_telegram_logs_link():
+    return MenuItem(
+        'Telegram Logs',
+        reverse('wagtailsnippets_news_telegramsynclog:list'),
+        icon_name='list-ul',
+        order=300
     )
 
 
@@ -150,14 +179,6 @@ def register_departments_menu_item():
     )
 
 
-@hooks.register('register_admin_menu_item')
-def register_leaders_menu_item():
-    return MenuItem(
-        'Rahbariyat',
-        '/admin/snippets/sections/leader/',
-        icon_name='user',
-        order=195,
-    )
 
 
 @hooks.register('register_admin_menu_item')

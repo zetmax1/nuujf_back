@@ -282,6 +282,12 @@ class TelegramBotConfig(models.Model):
         help_text="Comma-separated Telegram user IDs of admins who can post news (leave empty to allow all)"
     )
     
+    website_url = models.URLField(
+        max_length=255,
+        default="https://example.com",
+        help_text="Base URL of the website (for 'View on Website' button in bot)"
+    )
+    
     default_news_image = models.ForeignKey(
         'wagtailimages.Image',
         null=True,

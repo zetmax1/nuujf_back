@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.db.models import F
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from .models import NewsPage, TelegramBotConfig, TelegramSyncLog
@@ -74,8 +75,11 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
         # Only increment view count once per session per post
         viewed_posts = request.session.get('viewed_posts', [])
         if instance.pk not in viewed_posts:
-            instance.views_count += 1
-            instance.save(update_fields=['views_count'])
+            # Atomic increment to prevent race conditions
+            NewsPage.objects.filter(pk=instance.pk).update(
+                views_count=F('views_count') + 1
+            )
+            instance.refresh_from_db(fields=['views_count'])
             viewed_posts.append(instance.pk)
             request.session['viewed_posts'] = viewed_posts
         

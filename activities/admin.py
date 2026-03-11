@@ -1,7 +1,7 @@
 from django.contrib import admin
 from modeltranslation.admin import TabbedTranslationAdmin
 from wagtail.snippets.models import register_snippet
-from wagtail.snippets.views.snippets import SnippetViewSet
+from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 from .models import ActivityCategory, ActivityPage
 
 
@@ -14,8 +14,6 @@ class ActivityCategorySnippetViewSet(SnippetViewSet):
     icon = "doc-full"
     menu_label = "Faoliyatlar"
     menu_name = "activities"
-    menu_order = 350
-    add_to_admin_menu = True
     inspect_view_enabled = True
     list_display = ['title', 'icon', 'order', 'is_active']
     list_filter = ['is_active']
@@ -23,16 +21,11 @@ class ActivityCategorySnippetViewSet(SnippetViewSet):
     ordering = ['order', 'title']
 
 
-register_snippet(ActivityCategorySnippetViewSet)
-
-
 class ActivityPageSnippetViewSet(SnippetViewSet):
     model = ActivityPage
     icon = "doc-full-inverse"
     menu_label = "Faoliyat sahifalari"
     menu_name = "activity-pages"
-    menu_order = 351
-    add_to_admin_menu = True
     inspect_view_enabled = True
     list_display = ['title', 'category', 'parent', 'order', 'is_active']
     list_filter = ['is_active', 'category']
@@ -40,7 +33,19 @@ class ActivityPageSnippetViewSet(SnippetViewSet):
     ordering = ['category__order', 'order', 'title']
 
 
-register_snippet(ActivityPageSnippetViewSet)
+class ActivitySnippetGroup(SnippetViewSetGroup):
+    """Group all activity snippets under one 'Faoliyat' menu item."""
+    items = (
+        ActivityCategorySnippetViewSet,
+        ActivityPageSnippetViewSet,
+    )
+    menu_icon = "doc-full"
+    menu_label = "Faoliyat"
+    menu_name = "activities-group"
+    menu_order = 350
+
+
+register_snippet(ActivitySnippetGroup)
 
 
 # ============================================

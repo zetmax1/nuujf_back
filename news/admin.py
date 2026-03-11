@@ -1,6 +1,6 @@
 from django.contrib import admin
 from wagtail.snippets.models import register_snippet
-from wagtail.snippets.views.snippets import SnippetViewSet
+from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 from wagtail.admin.panels import FieldPanel
 from .models import TelegramBotConfig, TelegramSyncLog
 
@@ -11,8 +11,7 @@ class TelegramBotConfigViewSet(SnippetViewSet):
     icon = "site"
     menu_label = "Telegram Bot"
     menu_name = "telegram_bot"
-    menu_order = 300
-    add_to_admin_menu = True
+    add_to_admin_menu = False
     inspect_view_enabled = True
     list_display = ['name', 'is_active', 'auto_publish', 'updated_at']
     list_filter = ['is_active', 'auto_publish']
@@ -28,6 +27,7 @@ class TelegramBotConfigViewSet(SnippetViewSet):
         FieldPanel('news_hashtags'),
         FieldPanel('announcement_hashtags'),
         FieldPanel('admin_user_ids'),
+        FieldPanel('website_url'),
         FieldPanel('default_news_image'),
         FieldPanel('default_announcement_image'),
     ]
@@ -38,8 +38,7 @@ class TelegramSyncLogViewSet(SnippetViewSet):
     icon = "doc-full"
     menu_label = "Telegram Logs"
     menu_name = "telegram_logs"
-    menu_order = 301
-    add_to_admin_menu = True
+    add_to_admin_menu = False
     inspect_view_enabled = True
     list_display = ['telegram_message_id', 'status', 'news_page', 'created_at']
     list_filter = ['status', 'created_at']
@@ -58,7 +57,7 @@ class TelegramBotConfigAdmin(admin.ModelAdmin):
     search_fields = ['name']
     fieldsets = (
         ('Basic Settings', {
-            'fields': ('name', 'bot_token', 'webhook_secret', 'channel_id')
+            'fields': ('name', 'bot_token', 'webhook_secret', 'channel_id', 'website_url')
         }),
         ('Behavior', {
             'fields': ('is_active', 'auto_publish')

@@ -147,7 +147,7 @@ class NavItem(ClusterableModel):
         ], heading="Havola turi (bittasini tanlang)"),
         FieldPanel('order'),
         FieldPanel('is_active'),
-        InlinePanel('children', label="Pastki havolalar"),
+        InlinePanel('children', label="Ichki havolalar"),
     ]
 
     class Meta:
@@ -206,7 +206,7 @@ class SubNavItem(models.Model):
     )
     title = models.CharField(
         max_length=200,
-        help_text="Pastki havola matni (masalan: Filial haqida)"
+        help_text="Ichki havola matni (masalan: Filial haqida)"
     )
     page_id = models.CharField(
         max_length=100,
@@ -254,8 +254,8 @@ class SubNavItem(models.Model):
     ]
 
     class Meta:
-        verbose_name = "Pastki havola"
-        verbose_name_plural = "Pastki havolalar"
+        verbose_name = "Ichki havola"
+        verbose_name_plural = "Ichki havolalar"
         ordering = ['order', 'pk']
 
     def clean(self):

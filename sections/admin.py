@@ -1,7 +1,7 @@
 from django.contrib import admin
 from modeltranslation.admin import TabbedTranslationAdmin, TranslationTabularInline
 from wagtail.snippets.models import register_snippet
-from wagtail.snippets.views.snippets import SnippetViewSet
+from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 from .models import Leader, StructureSection, SectionMember
 
 
@@ -14,8 +14,6 @@ class LeaderSnippetViewSet(SnippetViewSet):
     icon = "user"
     menu_label = "Rahbariyat"
     menu_name = "leaders"
-    menu_order = 300
-    add_to_admin_menu = True
     inspect_view_enabled = True
     list_display = ['full_name', 'position', 'email', 'order', 'is_active']
     list_filter = ['is_active']
@@ -23,16 +21,11 @@ class LeaderSnippetViewSet(SnippetViewSet):
     ordering = ['order', 'full_name']
 
 
-register_snippet(LeaderSnippetViewSet)
-
-
 class StructureSectionSnippetViewSet(SnippetViewSet):
     model = StructureSection
     icon = "list-ul"
     menu_label = "Tuzilma"
     menu_name = "structure"
-    menu_order = 310
-    add_to_admin_menu = True
     inspect_view_enabled = True
     list_display = ['name', 'parent', 'leader', 'order', 'is_active']
     list_filter = ['is_active', 'parent']
@@ -40,7 +33,19 @@ class StructureSectionSnippetViewSet(SnippetViewSet):
     ordering = ['order', 'name']
 
 
-register_snippet(StructureSectionSnippetViewSet)
+class SectionsSnippetGroup(SnippetViewSetGroup):
+    """Group Rahbariyat and Tuzilma under one 'Boshqaruv' menu item."""
+    items = (
+        LeaderSnippetViewSet,
+        StructureSectionSnippetViewSet,
+    )
+    menu_icon = "user"
+    menu_label = "Boshqaruv"
+    menu_name = "management"
+    menu_order = 310
+
+
+register_snippet(SectionsSnippetGroup)
 
 
 # ============================================

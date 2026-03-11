@@ -13,8 +13,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from pathlib import Path
 
+import os
+
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = PROJECT_DIR.parent
+
+# Ensure logs directory exists
+LOGS_DIR = BASE_DIR / "logs"
+os.makedirs(LOGS_DIR, exist_ok=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -64,6 +70,14 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # ── Custom security middlewares (run first) ──────────────────
+    "middleware.security_headers.SecurityHeadersMiddleware",
+    "middleware.request_size.RequestSizeLimitMiddleware",
+    "middleware.suspicious_requests.SuspiciousRequestMiddleware",
+    "middleware.ip_filter.IPFilterMiddleware",
+    "middleware.admin_protection.AdminIPWhitelistMiddleware",
+
+    # ── Django / third-party middlewares ─────────────────────────
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -237,3 +251,48 @@ SPECTACULAR_SETTINGS = {
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+
+# ============================================
+# LOGGING — Security middleware logs
+# ============================================
+# Uses RotatingFileHandler: each log file up to 10 MB,
+# keeps last 10 log files, auto-deletes the oldest.
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "security": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "security_file": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOGS_DIR / "security.log"),
+            "maxBytes": 10 * 1024 * 1024,  # 10 MB per file
+            "backupCount": 10,              # keep last 10 files
+            "formatter": "security",
+        },
+    },
+    "loggers": {
+        "middleware.suspicious_requests": {
+            "handlers": ["security_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "middleware.admin_protection": {
+            "handlers": ["security_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "middleware.ip_filter": {
+            "handlers": ["security_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}
