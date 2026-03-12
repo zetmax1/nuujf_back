@@ -1,0 +1,3 @@
+GET https://student.jbnuu.uz/rest/v1/public/stat-student
+Content-Type: application/json
+Authorization: Bearer 

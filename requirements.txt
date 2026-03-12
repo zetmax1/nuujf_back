@@ -52,6 +52,7 @@ py-serializable==2.1.0
 Pygments==2.19.2
 pyparsing==3.3.2
 pypdf==6.8.0
+python-decouple==3.8
 python-magic==0.4.27
 python-telegram-bot==21.0
 PyYAML==6.0.3
