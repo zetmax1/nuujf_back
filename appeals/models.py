@@ -64,28 +64,24 @@ class Appeal(index.Indexed, models.Model):
     # Wagtail admin panels
     panels = [
         MultiFieldPanel([
-            FieldPanel('full_name'),
-            FieldPanel('email'),
-            FieldPanel('department_uz'),
-            FieldPanel('department_ru'),
-            FieldPanel('department_en'),
-            FieldPanel('group_number'),
-            FieldPanel('phone'),
+            FieldPanel('full_name', read_only=True),
+            FieldPanel('email', read_only=True),
+            FieldPanel('department', read_only=True),
+            FieldPanel('group_number', read_only=True),
+            FieldPanel('phone', read_only=True),
         ], heading="Murojaat yuboruvchi ma'lumotlari"),
         MultiFieldPanel([
-            FieldPanel('message_uz'),
-            FieldPanel('message_ru'),
-            FieldPanel('message_en'),
-        ], heading="Murojaat matni (3 tilda)"),
+            FieldPanel('message', read_only=True),
+        ], heading="Murojaat matni"),
         MultiFieldPanel([
-            FieldPanel('terms_accepted'),
+            FieldPanel('terms_accepted', read_only=True),
             FieldPanel('is_read'),
         ], heading="Holat"),
     ]
 
     class Meta:
-        verbose_name = "Murojaat"
-        verbose_name_plural = "Murojaatlar"
+        verbose_name = "Direktorga murojaat"
+        verbose_name_plural = "Direktorga murojaatlar"
         ordering = ['-created_at']
 
     def __str__(self):

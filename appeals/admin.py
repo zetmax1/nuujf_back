@@ -12,7 +12,7 @@ from .models import Appeal
 class AppealSnippetViewSet(SnippetViewSet):
     model = Appeal
     icon = "mail"
-    menu_label = "Murojaatlar"
+    menu_label = "Direktorga murojaatlar"
     menu_name = "appeals"
     menu_order = 500
     add_to_admin_menu = True
@@ -36,7 +36,7 @@ class AppealAdmin(TabbedTranslationAdmin):
     list_filter = ['is_read', 'created_at']
     search_fields = ['full_name', 'email', 'phone', 'message']
     list_editable = ['is_read']
-    readonly_fields = ['full_name', 'email', 'phone', 'group_number', 'terms_accepted', 'created_at']
+    readonly_fields = ['full_name', 'email', 'department', 'phone', 'group_number', 'message', 'terms_accepted', 'created_at']
     fieldsets = (
         ("Murojaat yuboruvchi", {
             'fields': ('full_name', 'email', 'department', 'group_number', 'phone')

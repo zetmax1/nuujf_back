@@ -34,8 +34,8 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, help_text='Yuborilgan sana')),
             ],
             options={
-                'verbose_name': 'Murojaat',
-                'verbose_name_plural': 'Murojaatlar',
+                'verbose_name': 'Direktorga murojaat',
+                'verbose_name_plural': 'Direktorga murojaatlar',
                 'ordering': ['-created_at'],
             },
             bases=(modelsearch.index.Indexed, models.Model),
