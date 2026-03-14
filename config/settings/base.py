@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'collaboration',
     'appeals',
     'admission',
+    'science',
     "home",
     "search",
     "hemis",

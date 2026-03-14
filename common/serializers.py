@@ -218,3 +218,16 @@ class VacancyApplicationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Faylda shubhali (zararli) matn qismlari aniqlandi.")
 
         return value
+
+
+class ImageSerializer(serializers.Serializer):
+    url = serializers.ImageField(source='image')
+    full_url = serializers.SerializerMethodField()
+
+    def get_full_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
