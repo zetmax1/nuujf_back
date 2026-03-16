@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/appeals/', include('appeals.urls')),
     path('api/admission/', include('admission.urls')),
     path('api/science/', include('science.urls')),
+    path('api/enlightenment/', include('enlightenment.urls')),
     path('api/hemis/', include('hemis.urls')),
     path('api/v2/', api_router.urls),
     

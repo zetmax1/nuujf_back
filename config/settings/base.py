@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'appeals',
     'admission',
     'science',
+    'enlightenment',
     "home",
     "search",
     "hemis",
