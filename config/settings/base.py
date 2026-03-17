@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "home",
     "search",
     "hemis",
+    "information_systems",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",

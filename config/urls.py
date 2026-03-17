@@ -6,7 +6,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
-from faculties.api import api_router 
+from common.api import api_router 
 
 from search import views as search_views
 
@@ -31,6 +31,7 @@ urlpatterns = [
     path('api/science/', include('science.urls')),
     path('api/enlightenment/', include('enlightenment.urls')),
     path('api/hemis/', include('hemis.urls')),
+    path('api/information-systems/', include('information_systems.urls')),
     path('api/v2/', api_router.urls),
     
     # OpenAPI Schema and Documentation

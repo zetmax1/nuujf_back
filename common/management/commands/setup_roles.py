@@ -25,12 +25,7 @@ ROLE_DEFINITIONS = [
         'page_type': 'news.NewsIndexPage',
         'permissions': ['add', 'edit', 'publish'],
     },
-    {
-        'name': 'IT Department',
-        'description': 'Can edit faculty and department pages',
-        'page_type': 'faculties.FacultyIndexPage',
-        'permissions': ['add', 'edit'],
-    },
+    # IT Department role removed — faculties are now managed via Snippets, not Pages
 ]
 
 

@@ -1,35 +1,115 @@
+import re
 from rest_framework import serializers
+from wagtail.rich_text import expand_db_html
 from .models import (
-    FacultyPage, FacultyDepartment, FacultyAchievement,
-    DepartmentPage, DepartmentProgram, DepartmentSubject,
-    DepartmentStaff, DepartmentPublication
+    Faculty, FacultyAchievement,
+    Department, DepartmentProgram, DepartmentSubject,
+    DepartmentStaff, DepartmentPublication,
 )
 
 
-class FacultyDepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FacultyDepartment
-        fields = ['id', 'name', 'description', 'head_of_department']
+def expand_rich_text(raw_html, request=None):
+    """Expand Wagtail rich text and make image/document URLs absolute."""
+    if not raw_html:
+        return ''
+    html = expand_db_html(raw_html)
+    if request:
+        def make_src_absolute(match):
+            url = match.group(1)
+            if url.startswith('/'):
+                return f'src="{request.build_absolute_uri(url)}"'
+            return match.group(0)
 
+        def make_href_absolute(match):
+            url = match.group(1)
+            if url.startswith('/'):
+                return f'href="{request.build_absolute_uri(url)}"'
+            return match.group(0)
+
+        html = re.sub(r'src="([^"]*)"', make_src_absolute, html)
+        html = re.sub(r'href="(/documents/[^"]*)"', make_href_absolute, html)
+    return html
+
+
+def get_image_url(image, request=None):
+    """Return absolute URL for a Wagtail image."""
+    if not image:
+        return None
+    url = image.file.url
+    if request:
+        return request.build_absolute_uri(url)
+    return url
+
+
+# ============================================
+# FACULTY SERIALIZERS
+# ============================================
 
 class FacultyAchievementSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = FacultyAchievement
-        fields = ['id', 'title', 'description', 'year']
+        fields = ['id', 'title', 'description', 'year', 'link', 'image_url']
+
+    def get_image_url(self, obj):
+        return get_image_url(obj.image, self.context.get('request'))
 
 
-class FacultyPageSerializer(serializers.ModelSerializer):
-    departments = FacultyDepartmentSerializer(many=True, read_only=True)
-    achievements = FacultyAchievementSerializer(many=True, read_only=True)
-    
+class FacultyListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for faculty listing."""
+    cover_image_url = serializers.SerializerMethodField()
+    departments_count = serializers.SerializerMethodField()
+
     class Meta:
-        model = FacultyPage
+        model = Faculty
         fields = [
-            'id', 'title', 'slug', 'faculty_code', 'short_description',
-            'description', 'phone', 'email', 'office_location',
-            'dean_name', 'dean_title', 'dean_bio',
-            'departments', 'achievements'
+            'id', 'name', 'slug', 'faculty_code',
+            'short_description', 'cover_image_url',
+            'dean_name', 'departments_count',
         ]
+
+    def get_cover_image_url(self, obj):
+        return get_image_url(obj.cover_image, self.context.get('request'))
+
+    def get_departments_count(self, obj):
+        return obj.departments.filter(is_active=True).count()
+
+
+class FacultyDetailSerializer(serializers.ModelSerializer):
+    """Full serializer for faculty detail — includes nested departments & achievements."""
+    description = serializers.SerializerMethodField()
+    cover_image_url = serializers.SerializerMethodField()
+    dean_image_url = serializers.SerializerMethodField()
+    achievements = FacultyAchievementSerializer(many=True, read_only=True)
+    departments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Faculty
+        fields = [
+            'id', 'name', 'slug', 'faculty_code',
+            'short_description', 'description',
+            'cover_image_url',
+            'phone', 'email', 'office_location',
+            'dean_name', 'dean_image_url',
+            'departments', 'achievements',
+        ]
+
+    def get_description(self, obj):
+        return expand_rich_text(obj.description, self.context.get('request'))
+
+    def get_cover_image_url(self, obj):
+        return get_image_url(obj.cover_image, self.context.get('request'))
+
+    def get_dean_image_url(self, obj):
+        return get_image_url(obj.dean_image, self.context.get('request'))
+
+    def get_departments(self, obj):
+        """Nested departments belonging to this faculty."""
+        departments = obj.departments.filter(is_active=True).order_by('order', 'name')
+        return DepartmentListSerializer(
+            departments, many=True, context=self.context
+        ).data
 
 
 # ============================================
@@ -37,28 +117,31 @@ class FacultyPageSerializer(serializers.ModelSerializer):
 # ============================================
 
 class DepartmentProgramSerializer(serializers.ModelSerializer):
+    description = serializers.SerializerMethodField()
+
     class Meta:
         model = DepartmentProgram
-        fields = ['id', 'program_type', 'code', 'name', 'description']
+        fields = ['id', 'code', 'name', 'description']
+
+    def get_description(self, obj):
+        return expand_rich_text(obj.description, self.context.get('request'))
 
 
 class DepartmentSubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentSubject
-        fields = ['id', 'name', 'level', 'credits', 'description']
+        fields = ['id', 'name', 'description']
 
 
 class DepartmentStaffSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = DepartmentStaff
-        fields = ['id', 'name', 'title', 'email', 'specialization', 'bio', 'image_url']
-    
+        fields = ['id', 'name', 'email', 'image_url']
+
     def get_image_url(self, obj):
-        if obj.image:
-            return obj.image.file.url
-        return None
+        return get_image_url(obj.image, self.context.get('request'))
 
 
 class DepartmentPublicationSerializer(serializers.ModelSerializer):
@@ -67,56 +150,51 @@ class DepartmentPublicationSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'authors', 'year', 'journal_or_conference', 'link']
 
 
-class DepartmentPageListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for department listing"""
-    faculty_name = serializers.CharField(source='faculty.title', read_only=True)
+class DepartmentListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for department listing."""
+    faculty_name = serializers.CharField(source='faculty.name', default=None, read_only=True)
     cover_image_url = serializers.SerializerMethodField()
-    
+
     class Meta:
-        model = DepartmentPage
+        model = Department
         fields = [
-            'id', 'title', 'slug', 'department_code', 'short_description',
-            'faculty', 'faculty_name', 'cover_image_url', 'head_name'
+            'id', 'name', 'slug', 'department_code',
+            'short_description', 'faculty', 'faculty_name',
+            'cover_image_url', 'head_name',
         ]
-    
+
     def get_cover_image_url(self, obj):
-        if obj.cover_image:
-            return obj.cover_image.file.url
-        return None
+        return get_image_url(obj.cover_image, self.context.get('request'))
 
 
-class DepartmentPageSerializer(serializers.ModelSerializer):
-    """Full serializer for department detail"""
+class DepartmentDetailSerializer(serializers.ModelSerializer):
+    """Full serializer — returns ALL related data in one API call."""
+    description = serializers.SerializerMethodField()
+    faculty_name = serializers.CharField(source='faculty.name', default=None, read_only=True)
+    cover_image_url = serializers.SerializerMethodField()
+    head_image_url = serializers.SerializerMethodField()
     programs = DepartmentProgramSerializer(many=True, read_only=True)
     subjects = DepartmentSubjectSerializer(many=True, read_only=True)
     staff = DepartmentStaffSerializer(many=True, read_only=True)
     publications = DepartmentPublicationSerializer(many=True, read_only=True)
-    faculty_name = serializers.CharField(source='faculty.title', read_only=True)
-    cover_image_url = serializers.SerializerMethodField()
-    logo_url = serializers.SerializerMethodField()
-    head_image_url = serializers.SerializerMethodField()
-    
+
     class Meta:
-        model = DepartmentPage
+        model = Department
         fields = [
-            'id', 'title', 'slug', 'department_code', 'short_description', 'description',
-            'faculty', 'faculty_name', 'cover_image_url', 'logo_url',
+            'id', 'name', 'slug', 'department_code',
+            'short_description', 'description',
+            'faculty', 'faculty_name',
+            'cover_image_url',
             'phone', 'email', 'office_location',
-            'head_name', 'head_title', 'head_image_url', 'head_bio',
-            'programs', 'subjects', 'staff', 'publications'
+            'head_name', 'head_image_url',
+            'programs', 'subjects', 'staff', 'publications',
         ]
-    
+
+    def get_description(self, obj):
+        return expand_rich_text(obj.description, self.context.get('request'))
+
     def get_cover_image_url(self, obj):
-        if obj.cover_image:
-            return obj.cover_image.file.url
-        return None
-    
-    def get_logo_url(self, obj):
-        if obj.logo:
-            return obj.logo.file.url
-        return None
-    
+        return get_image_url(obj.cover_image, self.context.get('request'))
+
     def get_head_image_url(self, obj):
-        if obj.head_image:
-            return obj.head_image.file.url
-        return None
+        return get_image_url(obj.head_image, self.context.get('request'))

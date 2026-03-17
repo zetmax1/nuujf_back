@@ -157,26 +157,8 @@ def register_telegram_logs_link():
 #     )
 
 
-@hooks.register('register_admin_menu_item')
-def register_faculties_menu_item():
-    from faculties.models import FacultyIndexPage
-    return MenuItem(
-        'Fakultetlar',
-        _get_page_explorer_url(FacultyIndexPage),
-        icon_name='group',
-        order=210,
-    )
-
-
-@hooks.register('register_admin_menu_item')
-def register_departments_menu_item():
-    from faculties.models import DepartmentIndexPage
-    return MenuItem(
-        'Kafedralar',
-        _get_page_explorer_url(DepartmentIndexPage),
-        icon_name='clipboard-list',
-        order=211,
-    )
+# Faculties & Departments are now managed via Wagtail Snippets
+# (registered in faculties/admin.py as FacultiesSnippetGroup)
 
 
 
