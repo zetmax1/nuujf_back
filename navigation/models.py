@@ -296,3 +296,58 @@ class SubNavItem(models.Model):
 
     def __str__(self):
         return f"{self.parent.title} → {self.title}"
+
+
+@register_snippet
+class TopBarLink(models.Model):
+    """Links displayed in the top bar (e.g. 'Elektron pochta', 'Dars jadvali')"""
+
+    title = models.CharField(
+        max_length=200,
+        help_text="Havola matni (masalan: Elektron pochta)"
+    )
+    linked_page = models.ForeignKey(
+        'navigation.DynamicPage',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='topbar_links',
+        help_text="Dinamik sahifaga havola"
+    )
+    order = models.IntegerField(
+        default=0,
+        help_text="Tartib raqami"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Faolmi?"
+    )
+
+    panels = [
+        FieldPanel('title_uz'),
+        FieldPanel('title_ru'),
+        FieldPanel('title_en'),
+        FieldPanel('linked_page'),
+        FieldPanel('order'),
+        FieldPanel('is_active'),
+    ]
+
+    class Meta:
+        verbose_name = "TopBar havolasi"
+        verbose_name_plural = "TopBar havolalari"
+        ordering = ['order', 'pk']
+
+    @property
+    def link_type(self):
+        if self.linked_page:
+            return 'dynamic'
+        return 'none'
+
+    @property
+    def resolved_slug(self):
+        if self.linked_page:
+            return self.linked_page.slug
+        return None
+
+    def __str__(self):
+        return self.title

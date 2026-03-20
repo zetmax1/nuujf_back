@@ -1,7 +1,7 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.exceptions import NotFound
-from .models import NavItem, DynamicPage
-from .serializers import NavItemSerializer, DynamicPageSerializer
+from .models import NavItem, DynamicPage, TopBarLink
+from .serializers import NavItemSerializer, DynamicPageSerializer, TopBarLinkSerializer
 
 
 class NavItemListView(ListAPIView):
@@ -31,3 +31,12 @@ class DynamicPageDetailView(RetrieveAPIView):
             return self.get_queryset().get(slug=self.kwargs['slug'])
         except DynamicPage.DoesNotExist:
             raise NotFound("Sahifa topilmadi")
+
+
+class TopBarLinkListView(ListAPIView):
+    """Returns the list of active top bar links."""
+    serializer_class = TopBarLinkSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return TopBarLink.objects.filter(is_active=True).order_by('order', 'pk')

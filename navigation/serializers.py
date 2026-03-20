@@ -1,7 +1,7 @@
 import re
 from rest_framework import serializers
 from wagtail.rich_text import expand_db_html
-from .models import NavItem, SubNavItem, DynamicPage
+from .models import NavItem, SubNavItem, DynamicPage, TopBarLink
 
 
 class DynamicPageSerializer(serializers.ModelSerializer):
@@ -57,3 +57,12 @@ class NavItemSerializer(serializers.ModelSerializer):
     def get_children(self, obj):
         active_children = obj.children.filter(is_active=True).order_by('order', 'pk')
         return SubNavItemSerializer(active_children, many=True).data
+
+
+class TopBarLinkSerializer(serializers.ModelSerializer):
+    link_type = serializers.CharField(read_only=True)
+    resolved_slug = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = TopBarLink
+        fields = ['id', 'title', 'link_type', 'resolved_slug', 'order']

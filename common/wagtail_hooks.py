@@ -163,13 +163,33 @@ def register_telegram_logs_link():
 
 
 
+navigation_submenu = Menu(register_hook_name='register_navigation_submenu_item', construct_hook_name='construct_navigation_submenu')
+
 @hooks.register('register_admin_menu_item')
-def register_navigation_menu_item():
-    return MenuItem(
+def register_navigation_menu():
+    return SubmenuMenuItem(
         'Navigatsiya',
-        '/admin/snippets/navigation/navitem/',
+        navigation_submenu,
         icon_name='list-ul',
         order=100,
+    )
+
+@hooks.register('register_navigation_submenu_item')
+def register_main_nav_link():
+    return MenuItem(
+        'Asosiy menyu',
+        reverse('wagtailsnippets_navigation_navitem:list'),
+        icon_name='list-ul',
+        order=100
+    )
+
+@hooks.register('register_navigation_submenu_item')
+def register_topbar_nav_link():
+    return MenuItem(
+        'Top Panel havolalari',
+        reverse('wagtailsnippets_navigation_topbarlink:list'),
+        icon_name='placeholder',
+        order=200
     )
 
 
