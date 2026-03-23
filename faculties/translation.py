@@ -15,11 +15,11 @@ class FacultyAchievementTranslationOptions(TranslationOptions):
 
 
 class DepartmentTranslationOptions(TranslationOptions):
-    fields = ('name', 'short_description', 'description', 'head_name', 'office_location')
+    fields = ('name', 'short_description', 'description', 'head_name', 'office_location', 'reception_time')
 
 
 class DepartmentProgramTranslationOptions(TranslationOptions):
-    fields = ('name', 'description')
+    fields = ('name',)
 
 
 class DepartmentSubjectTranslationOptions(TranslationOptions):

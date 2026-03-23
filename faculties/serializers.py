@@ -117,14 +117,9 @@ class FacultyDetailSerializer(serializers.ModelSerializer):
 # ============================================
 
 class DepartmentProgramSerializer(serializers.ModelSerializer):
-    description = serializers.SerializerMethodField()
-
     class Meta:
         model = DepartmentProgram
-        fields = ['id', 'code', 'name', 'description']
-
-    def get_description(self, obj):
-        return expand_rich_text(obj.description, self.context.get('request'))
+        fields = ['id', 'code', 'name', 'degree']
 
 
 class DepartmentSubjectSerializer(serializers.ModelSerializer):
@@ -185,7 +180,7 @@ class DepartmentDetailSerializer(serializers.ModelSerializer):
             'short_description', 'description',
             'faculty', 'faculty_name',
             'cover_image_url',
-            'phone', 'email', 'office_location',
+            'phone', 'email', 'office_location', 'reception_time',
             'head_name', 'head_image_url',
             'programs', 'subjects', 'staff', 'publications',
         ]

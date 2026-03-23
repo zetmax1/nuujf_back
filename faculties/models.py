@@ -230,6 +230,11 @@ class Department(index.Indexed, models.Model):
     phone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     office_location = models.CharField(max_length=255, blank=True)
+    reception_time = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Qabul vaqti"
+    )
 
     head_name = models.CharField(
         max_length=255,
@@ -292,6 +297,9 @@ class Department(index.Indexed, models.Model):
             FieldPanel('office_location_uz'),
             FieldPanel('office_location_ru'),
             FieldPanel('office_location_en'),
+            FieldPanel('reception_time_uz'),
+            FieldPanel('reception_time_ru'),
+            FieldPanel('reception_time_en'),
         ], heading="Aloqa ma'lumotlari"),
         MultiFieldPanel([
             FieldPanel('order'),
@@ -331,7 +339,17 @@ class DepartmentProgram(models.Model):
     )
     code = models.CharField(max_length=50, blank=True)
     name = models.CharField(max_length=255)
-    description = RichTextField(blank=True)
+    
+    DEGREE_CHOICES = (
+        ('bachelor', 'Bakalavriat'),
+        ('master', 'Magistratura'),
+    )
+    degree = models.CharField(
+        max_length=20,
+        choices=DEGREE_CHOICES,
+        default='bachelor',
+        help_text="Ta'lim darajasi"
+    )
 
     panels = [
         FieldPanel('department'),
@@ -339,9 +357,7 @@ class DepartmentProgram(models.Model):
         FieldPanel('name_uz'),
         FieldPanel('name_ru'),
         FieldPanel('name_en'),
-        FieldPanel('description_uz'),
-        FieldPanel('description_ru'),
-        FieldPanel('description_en'),
+        FieldPanel('degree'),
     ]
 
     class Meta:
