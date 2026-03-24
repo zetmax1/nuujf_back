@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'wagtail.api.v2',
     'rest_framework',
     'drf_spectacular',
+    'silk',
 ]
 
 MIDDLEWARE = [
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     "middleware.admin_protection.AdminIPWhitelistMiddleware",
 
     # ── Django / third-party middlewares ─────────────────────────
+    'silk.middleware.SilkyMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -244,6 +246,9 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+SILKY_PYTHON_PROFILER = False  # Disabled: conflicts with Python 3.12's single-profiler limit
+SILKY_ANALYZE_QUERIES = False  # Disabled: SQLite doesn't support EXPLAIN ANALYZE
+
 
 # ============================================
 # LOGGING — Security middleware logs
@@ -291,3 +296,13 @@ LOGGING = {
 
 
 HEMIS_TOKEN = config("HEMIS_TOKEN")
+
+# ============================================
+# CACHING BACKEND
+# ============================================
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+    }
+}

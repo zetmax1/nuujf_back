@@ -73,6 +73,8 @@ class FacultyListSerializer(serializers.ModelSerializer):
         return get_image_url(obj.cover_image, self.context.get('request'))
 
     def get_departments_count(self, obj):
+        if hasattr(obj, 'active_departments_count'):
+            return obj.active_departments_count
         return obj.departments.filter(is_active=True).count()
 
 

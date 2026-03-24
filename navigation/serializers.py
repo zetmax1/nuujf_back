@@ -55,7 +55,9 @@ class NavItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'link_type', 'resolved_page_id', 'resolved_slug', 'order', 'children']
 
     def get_children(self, obj):
-        active_children = obj.children.filter(is_active=True).order_by('order', 'pk')
+        # Filter active children in-memory to utilize the cache from prefetch_related('children')
+        active_children = [child for child in obj.children.all() if child.is_active]
+        active_children.sort(key=lambda c: (c.order, c.pk))
         return SubNavItemSerializer(active_children, many=True).data
 
 

@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.throttling import AnonRateThrottle
+from config.mixins import CachedViewMixin
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from .models import Vacancy, VacancyApplication
@@ -29,7 +30,7 @@ class ApplicationDailyThrottle(AnonRateThrottle):
 
 
 @extend_schema(tags=['Vacancies'])
-class VacancyViewSet(viewsets.ReadOnlyModelViewSet):
+class VacancyViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
     """
     API endpoints for university vacancies.
 

@@ -2,6 +2,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
+from config.mixins import CachedViewMixin
 from .models import AchievementSection, EnlightenmentSection, Club
 from .serializers import (
     AchievementSectionSerializer,
@@ -12,7 +13,7 @@ from .serializers import (
 
 
 @extend_schema(tags=['Enlightenment'])
-class AchievementSectionListView(generics.ListAPIView):
+class AchievementSectionListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active achievement sections ("Yuksak marralar").
 
@@ -41,7 +42,7 @@ class AchievementSectionListView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Enlightenment'])
-class EnlightenmentSectionListView(generics.ListAPIView):
+class EnlightenmentSectionListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active enlightenment sections ("Ma'rifiy muhit").
 
@@ -70,7 +71,7 @@ class EnlightenmentSectionListView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Enlightenment'])
-class ClubListView(generics.ListAPIView):
+class ClubListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active clubs and circles.
 
@@ -99,7 +100,7 @@ class ClubListView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Enlightenment'])
-class ClubDetailView(generics.RetrieveAPIView):
+class ClubDetailView(CachedViewMixin, generics.RetrieveAPIView):
     """
     Retrieve a single club by slug.
 
@@ -127,7 +128,7 @@ class ClubDetailView(generics.RetrieveAPIView):
 
 
 @extend_schema(tags=['Enlightenment'])
-class StatsView(APIView):
+class StatsView(CachedViewMixin, APIView):
     """
     Return dynamic stats for the Achievements page sidebar.
 

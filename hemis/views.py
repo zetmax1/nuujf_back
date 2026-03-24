@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from config.mixins import CachedViewMixin
 from .models import HemisStatistic
 from .serializers import HemisStatisticSerializer
 
-class HemisStatisticAPIView(APIView):
+class HemisStatisticAPIView(CachedViewMixin, APIView):
     """
     Returns the statics data retrieved from HEMIS and saved locally.
     """

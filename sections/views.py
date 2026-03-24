@@ -1,5 +1,6 @@
 from rest_framework import generics
 from drf_spectacular.utils import extend_schema
+from config.mixins import CachedViewMixin
 from .models import Leader, StructureSection
 from .serializers import (
     LeaderSerializer,
@@ -9,7 +10,7 @@ from .serializers import (
 
 
 @extend_schema(tags=['Leadership'])
-class LeaderListView(generics.ListAPIView):
+class LeaderListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active university leaders (Rahbariyat).
 
@@ -33,7 +34,7 @@ class LeaderListView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Structure'])
-class StructureTreeView(generics.ListAPIView):
+class StructureTreeView(CachedViewMixin, generics.ListAPIView):
     """
     List all top-level structure sections as a tree.
 
@@ -75,7 +76,7 @@ class StructureTreeView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Structure'])
-class StructureSectionDetailView(generics.RetrieveAPIView):
+class StructureSectionDetailView(CachedViewMixin, generics.RetrieveAPIView):
     """
     Retrieve a single structure section by slug.
 

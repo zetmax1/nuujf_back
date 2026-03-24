@@ -1,4 +1,5 @@
 from rest_framework import generics
+from config.mixins import CachedViewMixin
 from rest_framework.exceptions import NotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -19,7 +20,7 @@ from .serializers import (
 # ============================================
 
 @extend_schema(tags=['Collaboration'])
-class CollaborationTypeListView(generics.ListAPIView):
+class CollaborationTypeListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active collaboration types.
 
@@ -46,7 +47,7 @@ class CollaborationTypeListView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Collaboration'])
-class CollaborationTypeDetailView(generics.RetrieveAPIView):
+class CollaborationTypeDetailView(CachedViewMixin, generics.RetrieveAPIView):
     """
     Retrieve a single collaboration type by slug.
 
@@ -80,7 +81,7 @@ class CollaborationTypeDetailView(generics.RetrieveAPIView):
 # ============================================
 
 @extend_schema(tags=['Collaboration'])
-class PartnerOrganizationListView(generics.ListAPIView):
+class PartnerOrganizationListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active partner organizations.
 
@@ -121,7 +122,7 @@ class PartnerOrganizationListView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Collaboration'])
-class PartnerOrganizationDetailView(generics.RetrieveAPIView):
+class PartnerOrganizationDetailView(CachedViewMixin, generics.RetrieveAPIView):
     """
     Retrieve a single partner organization by slug.
     """
@@ -149,7 +150,7 @@ class PartnerOrganizationDetailView(generics.RetrieveAPIView):
 # ============================================
 
 @extend_schema(tags=['Collaboration'])
-class CollaborationProjectListView(generics.ListAPIView):
+class CollaborationProjectListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active collaboration projects.
 
@@ -184,7 +185,7 @@ class CollaborationProjectListView(generics.ListAPIView):
 
 
 @extend_schema(tags=['Collaboration'])
-class CollaborationProjectDetailView(generics.RetrieveAPIView):
+class CollaborationProjectDetailView(CachedViewMixin, generics.RetrieveAPIView):
     """
     Retrieve a single collaboration project by slug.
 
@@ -218,7 +219,7 @@ class CollaborationProjectDetailView(generics.RetrieveAPIView):
 # ============================================
 
 @extend_schema(tags=['Collaboration'])
-class CollaborationPageDetailView(generics.RetrieveAPIView):
+class CollaborationPageDetailView(CachedViewMixin, generics.RetrieveAPIView):
     """
     Retrieve a single collaboration page by type slug and page slug.
 

@@ -17,6 +17,7 @@ urlpatterns = [
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
+    path("silk/", include("silk.urls", namespace="silk")),
 
     # API routes
     path('api/', include('faculties.urls')),

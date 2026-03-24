@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.db.models import F
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
+from config.mixins import CachedViewMixin, NoCacheMixin
 from .models import NewsPage, TelegramBotConfig, TelegramSyncLog
 from .serializers import NewsPageListSerializer, NewsPageDetailSerializer
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @extend_schema(tags=['News & Announcements'])
-class NewsViewSet(viewsets.ReadOnlyModelViewSet):
+class NewsViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
     """
     API endpoints for university news and announcements.
     
@@ -127,6 +128,27 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
     
     @extend_schema(
+        summary="Get latest for home page",
+        description="Retrieve the 5 most recent news or announcements optimized for home page display.",
+        responses={200: NewsPageListSerializer(many=True)}
+    )
+    @action(detail=False, methods=['get'])
+    def latest_for_home(self, request):
+        """Get latest items optimized: /api/news/latest_for_home/"""
+        queryset = NewsPage.objects.live().public().select_related(
+            'cover_image'
+        )
+        
+        post_type = request.query_params.get('type')
+        if post_type in ['news', 'announcement']:
+            queryset = queryset.filter(post_type=post_type)
+            
+        queryset = queryset.order_by('-published_date')[:5]
+        
+        serializer = NewsPageListSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @extend_schema(
         summary="Get announcements only",
         description="Retrieve only announcements (e'lonlar).",
         parameters=[
@@ -162,7 +184,7 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class TelegramWebhookView(APIView):
+class TelegramWebhookView(NoCacheMixin, APIView):
     """
     Webhook endpoint for Telegram bot.
     Receives messages from Telegram channel and creates NewsPage entries.

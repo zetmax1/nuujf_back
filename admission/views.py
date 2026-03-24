@@ -1,11 +1,12 @@
 from rest_framework import generics
 from drf_spectacular.utils import extend_schema
+from config.mixins import CachedViewMixin
 from .models import AdmissionYear
 from .serializers import AdmissionYearListSerializer, AdmissionYearDetailSerializer
 
 
 @extend_schema(tags=['Admission'])
-class AdmissionYearListView(generics.ListAPIView):
+class AdmissionYearListView(CachedViewMixin, generics.ListAPIView):
     """
     List all active admission years.
     """
@@ -19,17 +20,9 @@ class AdmissionYearListView(generics.ListAPIView):
             is_active=True
         ).order_by('order', '-title')
 
-    @extend_schema(
-        summary="Qabul yillari ro'yxati",
-        description="Barcha faol qabul yillarini qaytaradi.",
-        responses={200: AdmissionYearListSerializer(many=True)},
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
 
 @extend_schema(tags=['Admission'])
-class AdmissionYearDetailView(generics.RetrieveAPIView):
+class AdmissionYearDetailView(CachedViewMixin, generics.RetrieveAPIView):
     """
     Retrieve a single admission year with its quotas.
     """
@@ -41,12 +34,6 @@ class AdmissionYearDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         return AdmissionYear.objects.filter(
             is_active=True
-        ).prefetch_related('quotas')
-
-    @extend_schema(
-        summary="Qabul yili tafsilotlari",
-        description="Bitta qabul yilining to'liq ma'lumotlari va kvotalarini qaytaradi.",
-        responses={200: AdmissionYearDetailSerializer},
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)

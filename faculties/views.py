@@ -3,6 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
+from django.db.models import Count, Q
+from config.mixins import CachedViewMixin
+
 from .models import Faculty, Department
 from .serializers import (
     FacultyListSerializer, FacultyDetailSerializer,
@@ -11,7 +14,7 @@ from .serializers import (
 
 
 @extend_schema(tags=['Faculties'])
-class FacultyViewSet(viewsets.ReadOnlyModelViewSet):
+class FacultyViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
     """
     API endpoints for university faculties.
 
@@ -36,7 +39,9 @@ class FacultyViewSet(viewsets.ReadOnlyModelViewSet):
                 'achievements', 'departments'
             )
         else:
-            queryset = queryset.select_related('cover_image')
+            queryset = queryset.select_related('cover_image').annotate(
+                active_departments_count=Count('departments', filter=Q(departments__is_active=True))
+            )
 
         return queryset
 
@@ -94,7 +99,7 @@ class FacultyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @extend_schema(tags=['Departments'])
-class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
+class DepartmentViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
     """
     API endpoints for university departments.
 

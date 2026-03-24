@@ -1,10 +1,11 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.exceptions import NotFound
+from config.mixins import CachedViewMixin
 from .models import NavItem, DynamicPage, TopBarLink
 from .serializers import NavItemSerializer, DynamicPageSerializer, TopBarLinkSerializer
 
 
-class NavItemListView(ListAPIView):
+class NavItemListView(CachedViewMixin, ListAPIView):
     """Returns the full navigation tree for the frontend navbar."""
     serializer_class = NavItemSerializer
     pagination_class = None
@@ -18,7 +19,7 @@ class NavItemListView(ListAPIView):
         ).order_by('order', 'pk')
 
 
-class DynamicPageDetailView(RetrieveAPIView):
+class DynamicPageDetailView(CachedViewMixin, RetrieveAPIView):
     """Returns the content of a dynamic page by its slug."""
     serializer_class = DynamicPageSerializer
     lookup_field = 'slug'
@@ -33,10 +34,10 @@ class DynamicPageDetailView(RetrieveAPIView):
             raise NotFound("Sahifa topilmadi")
 
 
-class TopBarLinkListView(ListAPIView):
+class TopBarLinkListView(CachedViewMixin, ListAPIView):
     """Returns the list of active top bar links."""
     serializer_class = TopBarLinkSerializer
     pagination_class = None
 
     def get_queryset(self):
-        return TopBarLink.objects.filter(is_active=True).order_by('order', 'pk')
+        return TopBarLink.objects.filter(is_active=True).select_related('linked_page').order_by('order', 'pk')
