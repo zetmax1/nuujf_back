@@ -47,10 +47,10 @@ class VacancyListSerializer(serializers.ModelSerializer):
             'is_active', 'created_at', 'time_ago',
         ]
 
-    def get_time_ago(self, obj):
+    def get_time_ago(self, obj) -> str:
         return timesince(obj.created_at) + " oldin"
 
-    def get_salary_range(self, obj):
+    def get_salary_range(self, obj) -> str:
         if obj.salary_min and obj.salary_max:
             return f"{obj.salary_min:,} - {obj.salary_max:,} so'm"
         elif obj.salary_min:
@@ -84,10 +84,10 @@ class VacancyDetailSerializer(serializers.ModelSerializer):
             'applications_count',
         ]
 
-    def get_time_ago(self, obj):
+    def get_time_ago(self, obj) -> str:
         return timesince(obj.created_at) + " oldin"
 
-    def get_salary_range(self, obj):
+    def get_salary_range(self, obj) -> str:
         if obj.salary_min and obj.salary_max:
             return f"{obj.salary_min:,} - {obj.salary_max:,} so'm"
         elif obj.salary_min:
@@ -96,7 +96,7 @@ class VacancyDetailSerializer(serializers.ModelSerializer):
             return f"{obj.salary_max:,} so'm gacha"
         return "Kelishiladi"
 
-    def get_applications_count(self, obj):
+    def get_applications_count(self, obj) -> int:
         return obj.applications.count()
 
 
@@ -224,7 +224,7 @@ class ImageSerializer(serializers.Serializer):
     url = serializers.ImageField(source='image')
     full_url = serializers.SerializerMethodField()
 
-    def get_full_url(self, obj):
+    def get_full_url(self, obj) -> str | None:
         if obj.image:
             request = self.context.get('request')
             if request:

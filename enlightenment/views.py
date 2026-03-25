@@ -9,6 +9,7 @@ from .serializers import (
     EnlightenmentSectionSerializer,
     ClubListSerializer,
     ClubDetailSerializer,
+    StatsSerializer,
 )
 
 
@@ -134,6 +135,7 @@ class StatsView(CachedViewMixin, APIView):
 
     Counts partners, projects, and collaboration types from the collaboration app.
     """
+    serializer_class = StatsSerializer
     authentication_classes = []
     permission_classes = []
 

@@ -45,7 +45,7 @@ class PartnerOrganizationListSerializer(serializers.ModelSerializer):
             'logo_url', 'collaboration_type_title', 'order',
         ]
 
-    def get_logo_url(self, obj):
+    def get_logo_url(self, obj) -> str | None:
         if obj.logo:
             request = self.context.get('request')
             url = obj.logo.file.url
@@ -76,7 +76,7 @@ class PartnerOrganizationDetailSerializer(serializers.ModelSerializer):
             'order',
         ]
 
-    def get_logo_url(self, obj):
+    def get_logo_url(self, obj) -> str | None:
         if obj.logo:
             request = self.context.get('request')
             url = obj.logo.file.url
@@ -85,11 +85,11 @@ class PartnerOrganizationDetailSerializer(serializers.ModelSerializer):
             return url
         return None
 
-    def get_description(self, obj):
+    def get_description(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.description, request)
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -118,7 +118,7 @@ class CollaborationProjectListSerializer(serializers.ModelSerializer):
             'collaboration_type_title', 'order',
         ]
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -150,11 +150,11 @@ class CollaborationProjectDetailSerializer(serializers.ModelSerializer):
             'order',
         ]
 
-    def get_content(self, obj):
+    def get_content(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.content, request)
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -181,7 +181,7 @@ class CollaborationTypeListSerializer(serializers.ModelSerializer):
             'order', 'partner_count', 'project_count',
         ]
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -190,10 +190,10 @@ class CollaborationTypeListSerializer(serializers.ModelSerializer):
             return url
         return None
 
-    def get_partner_count(self, obj):
+    def get_partner_count(self, obj) -> int:
         return obj.partners.filter(is_active=True).count()
 
-    def get_project_count(self, obj):
+    def get_project_count(self, obj) -> int:
         return obj.projects.filter(is_active=True).count()
 
 
@@ -213,11 +213,11 @@ class CollaborationTypeDetailSerializer(serializers.ModelSerializer):
             'partners', 'projects', 'pages',
         ]
 
-    def get_description(self, obj):
+    def get_description(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.description, request)
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -226,7 +226,7 @@ class CollaborationTypeDetailSerializer(serializers.ModelSerializer):
             return url
         return None
 
-    def get_partners(self, obj):
+    def get_partners(self, obj) -> list:
         active_partners = obj.partners.filter(
             is_active=True
         ).select_related('collaboration_type').order_by('order', 'name')
@@ -234,7 +234,7 @@ class CollaborationTypeDetailSerializer(serializers.ModelSerializer):
             active_partners, many=True, context=self.context
         ).data
 
-    def get_projects(self, obj):
+    def get_projects(self, obj) -> list:
         active_projects = obj.projects.filter(
             is_active=True
         ).select_related('collaboration_type', 'cover_image').order_by('order', 'title')
@@ -242,7 +242,7 @@ class CollaborationTypeDetailSerializer(serializers.ModelSerializer):
             active_projects, many=True, context=self.context
         ).data
 
-    def get_pages(self, obj):
+    def get_pages(self, obj) -> list:
         """Return only direct child pages (parent=null)."""
         direct_pages = obj.pages.filter(
             is_active=True, parent__isnull=True
@@ -265,10 +265,10 @@ class CollaborationPageListSerializer(serializers.ModelSerializer):
         model = CollaborationPage
         fields = ['id', 'title', 'slug', 'cover_image_url', 'order', 'has_children']
 
-    def get_has_children(self, obj):
+    def get_has_children(self, obj) -> bool:
         return obj.children.filter(is_active=True).exists()
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -300,20 +300,20 @@ class CollaborationPageDetailSerializer(serializers.ModelSerializer):
             'children', 'breadcrumbs',
         ]
 
-    def get_content(self, obj):
+    def get_content(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.content, request)
 
-    def get_children(self, obj):
+    def get_children(self, obj) -> list:
         children = obj.children.filter(is_active=True).order_by('order', 'title')
         return CollaborationPageListSerializer(
             children, many=True, context=self.context
         ).data
 
-    def get_breadcrumbs(self, obj):
+    def get_breadcrumbs(self, obj) -> list:
         return obj.get_breadcrumbs()
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url

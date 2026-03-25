@@ -36,10 +36,10 @@ class ActivityPageListSerializer(serializers.ModelSerializer):
         model = ActivityPage
         fields = ['id', 'title', 'slug', 'cover_image_url', 'order', 'has_children']
 
-    def get_has_children(self, obj):
+    def get_has_children(self, obj) -> bool:
         return obj.children.filter(is_active=True).exists()
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -67,20 +67,20 @@ class ActivityPageDetailSerializer(serializers.ModelSerializer):
             'children', 'breadcrumbs',
         ]
 
-    def get_content(self, obj):
+    def get_content(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.content, request)
 
-    def get_children(self, obj):
+    def get_children(self, obj) -> list:
         children = obj.children.filter(is_active=True).order_by('order', 'title')
         return ActivityPageListSerializer(
             children, many=True, context=self.context
         ).data
 
-    def get_breadcrumbs(self, obj):
+    def get_breadcrumbs(self, obj) -> list:
         return obj.get_breadcrumbs()
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -99,7 +99,7 @@ class ActivityCategoryListSerializer(serializers.ModelSerializer):
         model = ActivityCategory
         fields = ['id', 'title', 'slug', 'icon', 'cover_image_url', 'order', 'page_count']
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -108,7 +108,7 @@ class ActivityCategoryListSerializer(serializers.ModelSerializer):
             return url
         return None
 
-    def get_page_count(self, obj):
+    def get_page_count(self, obj) -> int:
         return obj.pages.filter(is_active=True).count()
 
 
@@ -125,11 +125,11 @@ class ActivityCategoryDetailSerializer(serializers.ModelSerializer):
             'description', 'cover_image_url', 'order', 'pages',
         ]
 
-    def get_description(self, obj):
+    def get_description(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.description, request)
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -138,7 +138,7 @@ class ActivityCategoryDetailSerializer(serializers.ModelSerializer):
             return url
         return None
 
-    def get_pages(self, obj):
+    def get_pages(self, obj) -> list:
         """Return only direct child pages (parent=null)."""
         direct_pages = obj.pages.filter(
             is_active=True, parent__isnull=True

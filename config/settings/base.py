@@ -296,6 +296,7 @@ LOGGING = {
 
 
 HEMIS_TOKEN = config("HEMIS_TOKEN")
+SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-me-in-production")
 
 # ============================================
 # CACHING BACKEND

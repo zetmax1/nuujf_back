@@ -1,5 +1,6 @@
 import re
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from wagtail.rich_text import expand_db_html
 from .models import AchievementSection, EnlightenmentSection, Club
 
@@ -36,11 +37,12 @@ class AchievementSectionSerializer(serializers.ModelSerializer):
         model = AchievementSection
         fields = ['id', 'title', 'content', 'cover_image_url', 'order']
 
-    def get_content(self, obj):
+    def get_content(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.content, request)
 
-    def get_cover_image_url(self, obj):
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -59,11 +61,12 @@ class EnlightenmentSectionSerializer(serializers.ModelSerializer):
         model = EnlightenmentSection
         fields = ['id', 'title', 'content', 'cover_image_url', 'order']
 
-    def get_content(self, obj):
+    def get_content(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.content, request)
 
-    def get_cover_image_url(self, obj):
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -81,7 +84,8 @@ class ClubListSerializer(serializers.ModelSerializer):
         model = Club
         fields = ['id', 'name', 'slug', 'description', 'cover_image_url', 'order']
 
-    def get_cover_image_url(self, obj):
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -103,11 +107,11 @@ class ClubDetailSerializer(serializers.ModelSerializer):
             'content', 'cover_image_url', 'order',
         ]
 
-    def get_content(self, obj):
+    def get_content(self, obj) -> str:
         request = self.context.get('request')
         return expand_rich_text(obj.content, request)
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
             request = self.context.get('request')
             url = obj.cover_image.file.url
@@ -115,3 +119,9 @@ class ClubDetailSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(url)
             return url
         return None
+
+
+class StatsSerializer(serializers.Serializer):
+    partners_count = serializers.IntegerField()
+    projects_count = serializers.IntegerField()
+    programs_count = serializers.IntegerField()

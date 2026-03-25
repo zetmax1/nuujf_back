@@ -8,7 +8,10 @@ class InformationSystemSerializer(serializers.ModelSerializer):
         model = InformationSystem
         fields = ['id', 'name', 'link', 'order', 'short_description', 'icon_url']
 
-    def get_icon_url(self, obj):
+    def get_icon_url(self, obj) -> str | None:
         if obj.icon:
-            return obj.icon.file.url
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.icon.url)
+            return obj.icon.url
         return None

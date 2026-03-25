@@ -10,9 +10,13 @@ class NewsImageSerializer(serializers.ModelSerializer):
         model = NewsImage
         fields = ['id', 'image_url', 'caption', 'sort_order']
     
-    def get_image_url(self, obj):
+    def get_image_url(self, obj) -> str | None:
         if obj.image:
-            return obj.image.file.url
+            request = self.context.get('request')
+            url = obj.image.file.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
         return None
 
 
@@ -29,9 +33,13 @@ class NewsPageListSerializer(serializers.ModelSerializer):
             'is_pinned', 'views_count'
         ]
     
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
-            return obj.cover_image.file.url
+            request = self.context.get('request')
+            url = obj.cover_image.file.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
         return None
 
 
@@ -50,7 +58,11 @@ class NewsPageDetailSerializer(serializers.ModelSerializer):
             'synced_from_telegram'
         ]
     
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         if obj.cover_image:
-            return obj.cover_image.file.url
+            request = self.context.get('request')
+            url = obj.cover_image.file.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
         return None

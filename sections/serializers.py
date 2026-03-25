@@ -16,7 +16,7 @@ class LeaderSerializer(serializers.ModelSerializer):
             'image_url', 'bio', 'order',
         ]
 
-    def get_image_url(self, obj):
+    def get_image_url(self, obj) -> str | None:
         if obj.image:
             request = self.context.get('request')
             url = obj.image.file.url
@@ -37,7 +37,7 @@ class SectionMemberSerializer(serializers.ModelSerializer):
             'email', 'phone', 'image_url', 'order',
         ]
 
-    def get_image_url(self, obj):
+    def get_image_url(self, obj) -> str | None:
         if obj.image:
             request = self.context.get('request')
             url = obj.image.file.url
@@ -63,7 +63,7 @@ class StructureSectionSerializer(serializers.ModelSerializer):
             'order', 'leader', 'members', 'children',
         ]
 
-    def get_children(self, obj):
+    def get_children(self, obj) -> list:
         """Recursively serialize child sections."""
         children = obj.children.filter(is_active=True).order_by('order', 'name')
         return StructureSectionSerializer(
@@ -87,7 +87,7 @@ class StructureSectionDetailSerializer(serializers.ModelSerializer):
             'order', 'leader', 'members', 'children',
         ]
 
-    def get_description(self, obj):
+    def get_description(self, obj) -> str:
         """Render Wagtail internal rich text to proper HTML with absolute image URLs."""
         if obj.description:
             html = expand_db_html(obj.description)
@@ -103,9 +103,8 @@ class StructureSectionDetailSerializer(serializers.ModelSerializer):
             return html
         return ''
 
-    def get_children(self, obj):
+    def get_children(self, obj) -> list:
         children = obj.children.filter(is_active=True).order_by('order', 'name')
         return StructureSectionSerializer(
             children, many=True, context=self.context
         ).data
-

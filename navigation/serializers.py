@@ -11,7 +11,7 @@ class DynamicPageSerializer(serializers.ModelSerializer):
         model = DynamicPage
         fields = ['id', 'title', 'slug', 'body']
 
-    def get_body(self, obj):
+    def get_body(self, obj) -> str:
         """Expand Wagtail internal rich text to proper HTML with absolute URLs."""
         if obj.body:
             html = expand_db_html(obj.body)
@@ -54,7 +54,7 @@ class NavItemSerializer(serializers.ModelSerializer):
         model = NavItem
         fields = ['id', 'title', 'link_type', 'resolved_page_id', 'resolved_slug', 'order', 'children']
 
-    def get_children(self, obj):
+    def get_children(self, obj) -> list:
         # Filter active children in-memory to utilize the cache from prefetch_related('children')
         active_children = [child for child in obj.children.all() if child.is_active]
         active_children.sort(key=lambda c: (c.order, c.pk))

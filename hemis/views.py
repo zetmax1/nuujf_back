@@ -8,6 +8,8 @@ class HemisStatisticAPIView(CachedViewMixin, APIView):
     """
     Returns the statics data retrieved from HEMIS and saved locally.
     """
+    serializer_class = HemisStatisticSerializer
+
     def get(self, request, *args, **kwargs):
         stats = HemisStatistic.load()
         serializer = HemisStatisticSerializer(stats)

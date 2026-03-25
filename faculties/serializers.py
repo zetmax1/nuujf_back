@@ -31,7 +31,7 @@ def expand_rich_text(raw_html, request=None):
     return html
 
 
-def get_image_url(image, request=None):
+def get_image_url(image, request=None) -> str | None:
     """Return absolute URL for a Wagtail image."""
     if not image:
         return None
@@ -52,7 +52,7 @@ class FacultyAchievementSerializer(serializers.ModelSerializer):
         model = FacultyAchievement
         fields = ['id', 'title', 'description', 'year', 'link', 'image_url']
 
-    def get_image_url(self, obj):
+    def get_image_url(self, obj) -> str | None:
         return get_image_url(obj.image, self.context.get('request'))
 
 
@@ -69,10 +69,10 @@ class FacultyListSerializer(serializers.ModelSerializer):
             'dean_name', 'departments_count',
         ]
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         return get_image_url(obj.cover_image, self.context.get('request'))
 
-    def get_departments_count(self, obj):
+    def get_departments_count(self, obj) -> int:
         if hasattr(obj, 'active_departments_count'):
             return obj.active_departments_count
         return obj.departments.filter(is_active=True).count()
@@ -97,16 +97,16 @@ class FacultyDetailSerializer(serializers.ModelSerializer):
             'departments', 'achievements',
         ]
 
-    def get_description(self, obj):
+    def get_description(self, obj) -> str:
         return expand_rich_text(obj.description, self.context.get('request'))
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         return get_image_url(obj.cover_image, self.context.get('request'))
 
-    def get_dean_image_url(self, obj):
+    def get_dean_image_url(self, obj) -> str | None:
         return get_image_url(obj.dean_image, self.context.get('request'))
 
-    def get_departments(self, obj):
+    def get_departments(self, obj) -> list:
         """Nested departments belonging to this faculty."""
         departments = obj.departments.filter(is_active=True).order_by('order', 'name')
         return DepartmentListSerializer(
@@ -137,7 +137,7 @@ class DepartmentStaffSerializer(serializers.ModelSerializer):
         model = DepartmentStaff
         fields = ['id', 'name', 'email', 'image_url']
 
-    def get_image_url(self, obj):
+    def get_image_url(self, obj) -> str | None:
         return get_image_url(obj.image, self.context.get('request'))
 
 
@@ -160,7 +160,7 @@ class DepartmentListSerializer(serializers.ModelSerializer):
             'cover_image_url', 'head_name',
         ]
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         return get_image_url(obj.cover_image, self.context.get('request'))
 
 
@@ -187,11 +187,11 @@ class DepartmentDetailSerializer(serializers.ModelSerializer):
             'programs', 'subjects', 'staff', 'publications',
         ]
 
-    def get_description(self, obj):
+    def get_description(self, obj) -> str:
         return expand_rich_text(obj.description, self.context.get('request'))
 
-    def get_cover_image_url(self, obj):
+    def get_cover_image_url(self, obj) -> str | None:
         return get_image_url(obj.cover_image, self.context.get('request'))
 
-    def get_head_image_url(self, obj):
+    def get_head_image_url(self, obj) -> str | None:
         return get_image_url(obj.head_image, self.context.get('request'))

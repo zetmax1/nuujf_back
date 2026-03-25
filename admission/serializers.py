@@ -12,7 +12,7 @@ class AdmissionQuotaSerializer(serializers.ModelSerializer):
             'grant_count', 'contract_count', 'total', 'order',
         ]
 
-    def get_total(self, obj):
+    def get_total(self, obj) -> int:
         return obj.grant_count + obj.contract_count
 
 
@@ -36,6 +36,6 @@ class AdmissionYearDetailSerializer(serializers.ModelSerializer):
             'quotas',
         ]
 
-    def get_quotas(self, obj):
+    def get_quotas(self, obj) -> list:
         quotas = obj.quotas.all().order_by('order', 'direction_name')
         return AdmissionQuotaSerializer(quotas, many=True).data
