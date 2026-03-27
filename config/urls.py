@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import HttpResponse
 from django.urls import include, path
 from django.contrib import admin
 
@@ -18,6 +19,10 @@ urlpatterns = [
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path("silk/", include("silk.urls", namespace="silk")),
+    # Override filebrowser stub: django-filebrowser is not installed and
+    # TINYMCE_FILEBROWSER=False, so return empty JS instead of a 500 error.
+    path("tinymce/filebrowser/", lambda request: HttpResponse("Error occured", content_type="application/javascript")),
+    path("tinymce/", include("tinymce.urls")),
 
     # API routes
     path('api/', include('faculties.urls')),

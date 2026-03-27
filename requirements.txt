@@ -11,6 +11,7 @@ cyclonedx-python-lib==11.6.0
 defusedxml==0.7.1
 Django==5.2.12
 django-cors-headers==4.9.0
+django-tinymce==5.0.0
 django-filter==25.2
 django-modelcluster==6.4.1
 django-modeltranslation==0.20.2

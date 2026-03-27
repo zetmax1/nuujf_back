@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'enlightenment',
     "home",
     "search",
+    "tinymce",
     "hemis",
     "information_systems",
     "wagtail.contrib.forms",
@@ -199,6 +200,57 @@ WAGTAILSEARCH_BACKENDS = {
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 WAGTAILADMIN_BASE_URL = "http://example.com"
 
+# ============================================
+# RICH TEXT EDITOR — TinyMCE replaces Draftail
+# ============================================
+WAGTAILADMIN_RICH_TEXT_EDITORS = {
+    'default': {
+        'WIDGET': 'tinymce.widgets.TinyMCE',
+    },
+}
+
+TINYMCE_DEFAULT_CONFIG = {
+    "theme": "silver",
+    "height": 600,
+    "width": "100%",
+    "menubar": "file edit view insert format tools table help",
+    "plugins": (
+        "advlist autolink lists link image charmap preview anchor "
+        "searchreplace visualblocks code fullscreen "
+        "insertdatetime media table help wordcount "
+        "emoticons hr pagebreak nonbreaking "
+        "directionality visualchars"
+    ),
+    "toolbar": (
+        "undo redo | blocks fontfamily fontsize | "
+        "bold italic underline strikethrough | "
+        "forecolor backcolor removeformat | "
+        "alignleft aligncenter alignright alignjustify | "
+        "bullist numlist outdent indent | "
+        "table | link image media | "
+        "searchreplace | charmap emoticons | "
+        "fullscreen preview wordcount | help"
+    ),
+    "content_style": (
+        "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; "
+        "font-size: 14px; line-height: 1.6; }"
+    ),
+    "table_toolbar": (
+        "tableprops tabledelete | tableinsertrowbefore tableinsertrowafter "
+        "tabledeleterow | tableinsertcolbefore tableinsertcolafter "
+        "tabledeletecol | tablemergecells tablesplitcells"
+    ),
+    "image_advtab": True,
+    "image_caption": True,
+    "nonbreaking_force_tab": True,
+    "browser_spellcheck": True,
+    "contextmenu": "link image table",
+    "promotion": False,
+    "license_key": "gpl",
+}
+
+TINYMCE_FILEBROWSER = False
+
 # RBAC Settings ---> dynamic role based access control
 WAGTAIL_MODERATION_ENABLED = True
 WAGTAILADMIN_NOTIFICATION_INCLUDE_SUPERUSERS = False
@@ -230,7 +282,7 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'University API',
-    'DESCRIPTION': 'API documentation for University CMS - Faculties and Departments',
+    'DESCRIPTION': 'API documentation for University project built by yuta',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
