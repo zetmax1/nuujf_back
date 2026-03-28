@@ -12,10 +12,11 @@ ALLOWED_HOSTS = ["*"]
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 if DEBUG:
+    from decouple import config as decouple_config
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': 'redis://127.0.0.1:6379/1',
+            'LOCATION': decouple_config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
         }
     }
 

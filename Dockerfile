@@ -1,60 +1,47 @@
-# Use an official Python runtime based on Debian 12 "bookworm" as a parent image.
+# ── Build stage ──────────────────────────────────────────────
 FROM python:3.12-slim-bookworm
 
-# Add user that will be used in the container.
-RUN useradd wagtail
+# Create non-root user
+RUN useradd --create-home wagtail
 
-# Port used by this container to serve HTTP.
+# Port used by this container to serve HTTP
 EXPOSE 8000
 
-# Set environment variables.
-# 1. Force Python stdout and stderr streams to be unbuffered.
-# 2. Set PORT variable that is used by Gunicorn. This should match "EXPOSE"
-#    command.
+# Force unbuffered stdout/stderr so logs appear in real-time
 ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
     PORT=8000
 
-# Install system packages required by Wagtail and Django.
+# Install system packages required by Wagtail, Django, PostgreSQL, and Pillow
 RUN apt-get update --yes --quiet && apt-get install --yes --quiet --no-install-recommends \
     build-essential \
     libpq-dev \
-    libmariadb-dev \
     libjpeg62-turbo-dev \
     zlib1g-dev \
     libwebp-dev \
+    libmagic1 \
  && rm -rf /var/lib/apt/lists/*
 
-# Install the application server.
-RUN pip install "gunicorn==20.0.4"
+# Install project requirements (cached layer — only re-runs when requirements.txt changes)
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+ && rm /tmp/requirements.txt
 
-# Install the project requirements.
-COPY requirements.txt /
-RUN pip install -r /requirements.txt
-
-# Use /app folder as a directory where the source code is stored.
+# Use /app as the working directory
 WORKDIR /app
 
-# Set this directory to be owned by the "wagtail" user. This Wagtail project
-# uses SQLite, the folder needs to be owned by the user that
-# will be writing to the database file.
-RUN chown wagtail:wagtail /app
-
-# Copy the source code of the project into the container.
+# Copy project source code
 COPY --chown=wagtail:wagtail . .
 
-# Use user "wagtail" to run the build commands below and the server itself.
+# Copy and set up entrypoint
+COPY --chown=wagtail:wagtail entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Create directories that Django/Wagtail may need at runtime
+RUN mkdir -p /app/static /app/media /app/logs \
+ && chown -R wagtail:wagtail /app
+
+# Switch to non-root user
 USER wagtail
 
-# Collect static files.
-RUN python manage.py collectstatic --noinput --clear
-
-# Runtime command that executes when "docker run" is called, it does the
-# following:
-#   1. Migrate the database.
-#   2. Start the application server.
-# WARNING:
-#   Migrating database at the same time as starting the server IS NOT THE BEST
-#   PRACTICE. The database should be migrated manually or using the release
-#   phase facilities of your hosting platform. This is used only so the
-#   Wagtail instance can be started with a simple "docker run" command.
-CMD set -xe; python manage.py migrate --noinput; gunicorn config.wsgi:application
+ENTRYPOINT ["/entrypoint.sh"]

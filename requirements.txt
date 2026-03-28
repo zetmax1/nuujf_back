@@ -28,6 +28,7 @@ et_xmlfile==2.0.0
 filelock==3.25.1
 filetype==1.2.0
 gprof2dot==2025.4.14
+gunicorn==23.0.0
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
@@ -55,6 +56,7 @@ py-serializable==2.1.0
 Pygments==2.19.2
 pyparsing==3.3.2
 pypdf==6.8.0
+psycopg2-binary==2.9.10
 python-decouple==3.8
 python-magic==0.4.27
 python-telegram-bot==21.0
@@ -76,3 +78,4 @@ urllib3==2.6.3
 wagtail==7.2.3
 wagtail-localize==1.13
 Willow==1.12.0
+whitenoise==6.8.2

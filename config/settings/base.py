@@ -11,10 +11,19 @@ LOGS_DIR = BASE_DIR / "logs"
 os.makedirs(LOGS_DIR, exist_ok=True)
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+from decouple import Csv
 
+# Security and deployment config loaded dynamically from .env
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
+# Security settings
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=0, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=False, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=False, cast=bool)
 # Application definition
 
 INSTALLED_APPS = [
@@ -75,6 +84,7 @@ MIDDLEWARE = [
     'silk.middleware.SilkyMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -113,8 +123,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME", default="nuujf"),
+        "USER": config("DB_USER", default="nuujf_user"),
+        "PASSWORD": config("DB_PASSWORD", default=""),
+        "HOST": config("DB_HOST", default="127.0.0.1"),
+        "PORT": config("DB_PORT", default="5432"),
     }
 }
 
@@ -356,6 +370,6 @@ SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-me-in-producti
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
     }
 }
