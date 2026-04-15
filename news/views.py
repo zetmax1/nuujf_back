@@ -24,7 +24,7 @@ class NewsViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
     Provides listing, detail view, and filtering capabilities.
     All content supports multilingual content.
     """
-    queryset = NewsPage.objects.live().public()
+    queryset = NewsPage.objects.all()
     serializer_class = NewsPageDetailSerializer
     
     def get_serializer_class(self):
@@ -87,7 +87,7 @@ class NewsViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
         return super().retrieve(request, *args, **kwargs)
     
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = NewsPage.objects.live().public()
         
         # Filter by locale/language (optional - if not specified, return all)
         locale = self.request.query_params.get('locale')

@@ -28,8 +28,13 @@ class DynamicPageDetailView(CachedViewMixin, RetrieveAPIView):
         return DynamicPage.objects.filter(is_active=True)
 
     def get_object(self):
+        slug = self.kwargs['slug']
+        if slug in ('null', 'undefined'):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError("Noto'g'ri slug kiritildi (null or undefined)")
+            
         try:
-            return self.get_queryset().get(slug=self.kwargs['slug'])
+            return self.get_queryset().get(slug=slug)
         except DynamicPage.DoesNotExist:
             raise NotFound("Sahifa topilmadi")
 
