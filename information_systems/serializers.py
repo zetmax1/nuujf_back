@@ -12,6 +12,6 @@ class InformationSystemSerializer(serializers.ModelSerializer):
         if obj.icon:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.icon.url)
-            return obj.icon.url
+                return request.build_absolute_uri(obj.icon.file.url)
+            return obj.icon.file.url
         return None

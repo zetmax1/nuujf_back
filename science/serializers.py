@@ -54,6 +54,7 @@ class ResearchAreaSerializer(serializers.ModelSerializer):
         model = ResearchArea
         fields = ['id', 'title', 'slug', 'description', 'order', 'is_active', 'details']
 
-    def get_details(self, obj) -> list:
-        details = obj.details.all().order_by('order')
-        return ScienceProjectDetailItemSerializer(details, many=True, context=self.context).data
+    def get_details(self, obj) -> dict | None:
+        if hasattr(obj, 'details'):
+            return ResearchDetailSerializer(obj.details, context=self.context).data
+        return None

@@ -1,4 +1,4 @@
-# NUUJF — University Backend
+# NUUJF — University Backend developing by yutadev
 
 Django + Wagtail backend for the university website.
 
