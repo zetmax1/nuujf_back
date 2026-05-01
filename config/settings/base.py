@@ -78,7 +78,7 @@ MIDDLEWARE = [
     "middleware.request_size.RequestSizeLimitMiddleware",
     "middleware.suspicious_requests.SuspiciousRequestMiddleware",
     "middleware.ip_filter.IPFilterMiddleware",
-    "middleware.admin_protection.AdminIPWhitelistMiddleware",
+    # "middleware.admin_protection.AdminIPWhitelistMiddleware",
 
     # ── Django / third-party middlewares ─────────────────────────
     'silk.middleware.SilkyMiddleware',
@@ -121,23 +121,23 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": config("DB_NAME", default="nuujf"),
-#         "USER": config("DB_USER", default="nuujf_user"),
-#         "PASSWORD": config("DB_PASSWORD", default=""),
-#         "HOST": config("DB_HOST", default="127.0.0.1"),
-#         "PORT": config("DB_PORT", default="5432"),
-#     }
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME", default="nuujf"),
+        "USER": config("DB_USER", default="nuujf_user"),
+        "PASSWORD": config("DB_PASSWORD", default=""),
+        "HOST": config("DB_HOST", default="127.0.0.1"),
+        "PORT": config("DB_PORT", default="5432"),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation

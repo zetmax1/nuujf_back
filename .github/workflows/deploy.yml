@@ -1,0 +1,194 @@
+name: Backend CI/CD — Build, Test & Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: zetmax1/nuujf_back
+
+jobs:
+  # ══════════════════════════════════════════════════════════════
+  # JOB 1 — Lint & Test
+  # ══════════════════════════════════════════════════════════════
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: nuujf_test
+          POSTGRES_USER: nuujf_user
+          POSTGRES_PASSWORD: testpassword
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Django system checks
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          SECRET_KEY: ci-secret-key-not-for-production
+          DEBUG: "False"
+          ALLOWED_HOSTS: "localhost,127.0.0.1"
+          DB_NAME: nuujf_test
+          DB_USER: nuujf_user
+          DB_PASSWORD: testpassword
+          DB_HOST: "127.0.0.1"
+          DB_PORT: "5432"
+          REDIS_URL: redis://127.0.0.1:6379/1
+          HEMIS_TOKEN: dummy-token
+          SECURE_SSL_REDIRECT: "False"
+          SESSION_COOKIE_SECURE: "False"
+          CSRF_COOKIE_SECURE: "False"
+          SECURE_HSTS_SECONDS: "0"
+          SECURE_HSTS_INCLUDE_SUBDOMAINS: "False"
+          SECURE_HSTS_PRELOAD: "False"
+        run: python manage.py check --deploy
+
+      - name: Run migrations
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          SECRET_KEY: ci-secret-key-not-for-production
+          DEBUG: "False"
+          ALLOWED_HOSTS: "localhost,127.0.0.1"
+          DB_NAME: nuujf_test
+          DB_USER: nuujf_user
+          DB_PASSWORD: testpassword
+          DB_HOST: "127.0.0.1"
+          DB_PORT: "5432"
+          REDIS_URL: redis://127.0.0.1:6379/1
+          HEMIS_TOKEN: dummy-token
+          SECURE_SSL_REDIRECT: "False"
+          SESSION_COOKIE_SECURE: "False"
+          CSRF_COOKIE_SECURE: "False"
+          SECURE_HSTS_SECONDS: "0"
+          SECURE_HSTS_INCLUDE_SUBDOMAINS: "False"
+          SECURE_HSTS_PRELOAD: "False"
+        run: python manage.py migrate --noinput
+
+  # ══════════════════════════════════════════════════════════════
+  # JOB 2 — Build & Push Docker image (main/master only)
+  # ══════════════════════════════════════════════════════════════
+  build-and-push:
+    name: Build & Push Docker image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ══════════════════════════════════════════════════════════════
+  # JOB 3 — Deploy to Production Server via SSH
+  # ══════════════════════════════════════════════════════════════
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    environment: production
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            cd /opt/nuujf/backend
+
+            # Authenticate with GitHub Container Registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull latest images without stopping running containers
+            docker compose -f docker-compose.prod.yml pull web telegram-bot
+
+            # Replace the web container (starts new before killing old)
+            docker compose -f docker-compose.prod.yml up -d --no-deps web
+
+            # Restart the bot (no HTTP traffic, regular restart is fine)
+            docker compose -f docker-compose.prod.yml restart telegram-bot
+
+            # Run migrations — idempotent, safe to always run
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput
+
+            # Free disk space
+            docker image prune -f
+
+            echo "✅ Backend deployed successfully!"
