@@ -37,6 +37,17 @@ echo "✅ Redis is ready!"
 echo "🔄 Running migrations..."
 python manage.py migrate --noinput
 
+echo "👤 Creating default superuser..."
+python manage.py shell -c "
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if not User.objects.filter(username='zokhidjon').exists():
+    User.objects.create_superuser('zokhidjon', 'zokhidjonyuta@gmail.com', '(yuta0011)!')
+    print('✅ Superuser created: zokhidjon')
+else:
+    print('✅ Superuser already exists.')
+"
+
 echo "📦 Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
