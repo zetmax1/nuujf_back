@@ -5,12 +5,12 @@ FROM python:3.12-slim-bookworm
 RUN useradd --create-home wagtail
 
 # Port used by this container to serve HTTP
-EXPOSE 8000
+EXPOSE 8086
 
 # Force unbuffered stdout/stderr so logs appear in real-time
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8000
+    PORT=8086
 
 # Install system packages required by Wagtail, Django, PostgreSQL, and Pillow
 RUN apt-get update --yes --quiet && apt-get install --yes --quiet --no-install-recommends \

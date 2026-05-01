@@ -36,7 +36,7 @@ services:
       - DB_HOST=db
       - REDIS_URL=redis://redis:6379/1
     ports:
-      - "8000:8000"
+      - "8086:8086"
     volumes:
       - media_data:/app/media
       - static_data:/app/static

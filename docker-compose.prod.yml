@@ -41,11 +41,11 @@ services:
       - DB_HOST=db
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8086:8086"
     volumes:
       # Bind mounts — host Nginx reads these directories directly
-      - /var/www/nuujf/media:/app/media
-      - /var/www/nuujf/static:/app/static
+      - /var/www/NuujfNew/media:/app/media
+      - /var/www/NuujfNew/static:/app/static
       - ./logs:/app/logs
     depends_on:
       db:
@@ -66,7 +66,7 @@ services:
       - DB_HOST=db
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
     volumes:
-      - /var/www/nuujf/media:/app/media
+      - /var/www/NuujfNew/media:/app/media
     depends_on:
       db:
         condition: service_healthy
@@ -78,9 +78,9 @@ services:
 
   # ── Frontend (React/Vite SPA served by internal Nginx) ──────
   frontend:
-    image: ${REGISTRY:-ghcr.io}/zetmax1/jbnuu_front:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-ghcr.io}/zetmax1/nuujf_front:${IMAGE_TAG:-latest}
     ports:
-      - "127.0.0.1:3000:80"
+      - "127.0.0.1:5175:5175"
     restart: unless-stopped
     networks:
       - internal
