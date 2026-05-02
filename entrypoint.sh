@@ -53,7 +53,7 @@ python manage.py collectstatic --noinput --clear
 
 echo "🚀 Starting Gunicorn..."
 exec gunicorn config.wsgi:application \
-    --bind [IP_ADDRESS]:8086 \
+    --bind 0.0.0.0:8086 \
     --workers 3 \
     --timeout 120 \
     --access-logfile - \
