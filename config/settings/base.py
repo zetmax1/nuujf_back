@@ -314,13 +314,8 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': '/api/',
 }
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",  
-#     "http://localhost:5173", 
-#     "http://127.0.0.1:3000",
-#     "http://127.0.0.1:5173",
-# ]
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='https://new.jbnuu.uz,http://localhost:5175,http://localhost:3000', cast=Csv())
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 SILKY_PYTHON_PROFILER = False  # Disabled: conflicts with Python 3.12's single-profiler limit
