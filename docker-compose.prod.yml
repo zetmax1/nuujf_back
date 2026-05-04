@@ -80,7 +80,7 @@ services:
   frontend:
     image: ${REGISTRY:-ghcr.io}/zetmax1/nuujf_front:${IMAGE_TAG:-latest}
     ports:
-      - "127.0.0.1:5175:80"
+      - "127.0.0.1:5175:87"
     restart: unless-stopped
     networks:
       - internal
