@@ -1,6 +1,6 @@
 from modeltranslation.translator import translator, TranslationOptions
 from .models import (
-    Faculty, FacultyAchievement,
+    Faculty, FacultyAchievement, FacultyStaff,
     Department, DepartmentProgram, DepartmentSubject,
     DepartmentStaff, DepartmentPublication,
 )
@@ -12,6 +12,10 @@ class FacultyTranslationOptions(TranslationOptions):
 
 class FacultyAchievementTranslationOptions(TranslationOptions):
     fields = ('title', 'description')
+
+
+class FacultyStaffTranslationOptions(TranslationOptions):
+    fields = ('name', 'degree')
 
 
 class DepartmentTranslationOptions(TranslationOptions):
@@ -27,7 +31,7 @@ class DepartmentSubjectTranslationOptions(TranslationOptions):
 
 
 class DepartmentStaffTranslationOptions(TranslationOptions):
-    fields = ('name',)
+    fields = ('name', 'degree')
 
 
 class DepartmentPublicationTranslationOptions(TranslationOptions):
@@ -36,6 +40,7 @@ class DepartmentPublicationTranslationOptions(TranslationOptions):
 
 translator.register(Faculty, FacultyTranslationOptions)
 translator.register(FacultyAchievement, FacultyAchievementTranslationOptions)
+translator.register(FacultyStaff, FacultyStaffTranslationOptions)
 translator.register(Department, DepartmentTranslationOptions)
 translator.register(DepartmentProgram, DepartmentProgramTranslationOptions)
 translator.register(DepartmentSubject, DepartmentSubjectTranslationOptions)

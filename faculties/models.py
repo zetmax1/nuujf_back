@@ -176,6 +176,44 @@ class FacultyAchievement(models.Model):
     def __str__(self):
         return self.title
 
+class FacultyStaff(models.Model):
+    """Faculty members and staff at the faculty level."""
+
+    faculty = models.ForeignKey(
+        Faculty,
+        on_delete=models.CASCADE,
+        related_name='staff'
+    )
+    name = models.CharField(max_length=255)
+    degree = models.CharField(max_length=255, blank=True)
+    email = models.EmailField(blank=True)
+
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+'
+    )
+
+    panels = [
+        FieldPanel('faculty'),
+        FieldPanel('name_uz'),
+        FieldPanel('name_ru'),
+        FieldPanel('name_en'),
+        FieldPanel('degree_uz'),
+        FieldPanel('degree_ru'),
+        FieldPanel('degree_en'),
+        FieldPanel('email'),
+        FieldPanel('image'),
+    ]
+
+    class Meta:
+        verbose_name = "Fakultet xodimi"
+        verbose_name_plural = "Fakultet xodimlari"
+
+    def __str__(self):
+        return self.name
 
 # ============================================
 # DEPARTMENTS SECTION
@@ -406,6 +444,7 @@ class DepartmentStaff(models.Model):
         related_name='staff'
     )
     name = models.CharField(max_length=255)
+    degree = models.CharField(max_length=255, blank=True)
     email = models.EmailField(blank=True)
 
     image = models.ForeignKey(
@@ -421,6 +460,9 @@ class DepartmentStaff(models.Model):
         FieldPanel('name_uz'),
         FieldPanel('name_ru'),
         FieldPanel('name_en'),
+        FieldPanel('degree_uz'),
+        FieldPanel('degree_ru'),
+        FieldPanel('degree_en'),
         FieldPanel('email'),
         FieldPanel('image'),
     ]

@@ -46,4 +46,7 @@ backup_*/
 Thumbs.db
 
 db.sqlite3
+DEPLOYMENT.md
 
+media/
+static/

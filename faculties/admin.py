@@ -3,7 +3,7 @@ from modeltranslation.admin import TabbedTranslationAdmin, TranslationTabularInl
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 from .models import (
-    Faculty, FacultyAchievement,
+    Faculty, FacultyAchievement, FacultyStaff,
     Department, DepartmentProgram, DepartmentSubject,
     DepartmentStaff, DepartmentPublication,
 )
@@ -35,6 +35,17 @@ class FacultyAchievementSnippetViewSet(SnippetViewSet):
     list_filter = ['faculty']
     search_fields = ['title']
     ordering = ['-year']
+
+
+class FacultyStaffSnippetViewSet(SnippetViewSet):
+    model = FacultyStaff
+    icon = "user"
+    menu_label = "Fakultet xodimlari"
+    menu_name = "faculty-staff"
+    inspect_view_enabled = True
+    list_display = ['name', 'email', 'faculty']
+    list_filter = ['faculty']
+    search_fields = ['name']
 
 
 class DepartmentSnippetViewSet(SnippetViewSet):
@@ -99,6 +110,7 @@ class FacultiesSnippetGroup(SnippetViewSetGroup):
     items = (
         FacultySnippetViewSet,
         FacultyAchievementSnippetViewSet,
+        FacultyStaffSnippetViewSet,
         DepartmentSnippetViewSet,
         DepartmentProgramSnippetViewSet,
         DepartmentSubjectSnippetViewSet,
@@ -123,6 +135,11 @@ class FacultyAchievementInline(TranslationTabularInline):
     extra = 0
 
 
+class FacultyStaffInline(TranslationTabularInline):
+    model = FacultyStaff
+    extra = 0
+
+
 @admin.register(Faculty)
 class FacultyAdmin(TabbedTranslationAdmin):
     list_display = ['name', 'faculty_code', 'order', 'is_active']
@@ -130,7 +147,7 @@ class FacultyAdmin(TabbedTranslationAdmin):
     search_fields = ['name', 'faculty_code']
     list_editable = ['order', 'is_active']
     readonly_fields = ['slug']
-    inlines = [FacultyAchievementInline]
+    inlines = [FacultyAchievementInline, FacultyStaffInline]
     fieldsets = (
         ("Asosiy ma'lumotlar", {
             'fields': ('name', 'slug', 'faculty_code', 'cover_image')

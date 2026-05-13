@@ -2,7 +2,7 @@ import re
 from rest_framework import serializers
 from wagtail.rich_text import expand_db_html
 from .models import (
-    Faculty, FacultyAchievement,
+    Faculty, FacultyAchievement, FacultyStaff,
     Department, DepartmentProgram, DepartmentSubject,
     DepartmentStaff, DepartmentPublication,
 )
@@ -56,6 +56,17 @@ class FacultyAchievementSerializer(serializers.ModelSerializer):
         return get_image_url(obj.image, self.context.get('request'))
 
 
+class FacultyStaffSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FacultyStaff
+        fields = ['id', 'name', 'degree', 'email', 'image_url']
+
+    def get_image_url(self, obj) -> str | None:
+        return get_image_url(obj.image, self.context.get('request'))
+
+
 class FacultyListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for faculty listing."""
     cover_image_url = serializers.SerializerMethodField()
@@ -84,6 +95,7 @@ class FacultyDetailSerializer(serializers.ModelSerializer):
     cover_image_url = serializers.SerializerMethodField()
     dean_image_url = serializers.SerializerMethodField()
     achievements = FacultyAchievementSerializer(many=True, read_only=True)
+    staff = FacultyStaffSerializer(many=True, read_only=True)
     departments = serializers.SerializerMethodField()
 
     class Meta:
@@ -94,7 +106,7 @@ class FacultyDetailSerializer(serializers.ModelSerializer):
             'cover_image_url',
             'phone', 'email', 'office_location',
             'dean_name', 'dean_image_url',
-            'departments', 'achievements',
+            'departments', 'achievements', 'staff',
         ]
 
     def get_description(self, obj) -> str:
@@ -135,7 +147,7 @@ class DepartmentStaffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DepartmentStaff
-        fields = ['id', 'name', 'email', 'image_url']
+        fields = ['id', 'name', 'degree', 'email', 'image_url']
 
     def get_image_url(self, obj) -> str | None:
         return get_image_url(obj.image, self.context.get('request'))
