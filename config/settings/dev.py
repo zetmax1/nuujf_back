@@ -12,13 +12,13 @@ ALLOWED_HOSTS = ["*"]
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 if DEBUG:
-    from decouple import config as decouple_config
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': decouple_config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
-        }
-    }
+    # django-silk: request/query profiler — dev only, never in production
+    INSTALLED_APPS += ['silk']
+    MIDDLEWARE = ['silk.middleware.SilkyMiddleware'] + MIDDLEWARE
+    SILKY_PYTHON_PROFILER = False  # True only when profiling CPU
+    SILKY_ANALYZE_QUERIES = True
+    # Exclude Wagtail admin to suppress JS-parsing warnings
+    SILKY_INTERCEPT_FUNC = lambda request: not request.path.startswith('/admin/')
 
 try:
     from .local import *

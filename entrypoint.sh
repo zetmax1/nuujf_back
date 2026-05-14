@@ -52,9 +52,19 @@ echo "📦 Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
 echo "🚀 Starting Gunicorn..."
+# Worker count: GUNICORN_WORKERS env var or (2 × CPU cores) + 1, capped at 17 for safety.
+# gthread: each worker spawns GUNICORN_THREADS async threads — better for I/O-bound Django views.
+# /dev/shm: worker heartbeat files in RAM (avoids disk I/O on slow /tmp mounts).
+# max-requests: recycle workers to prevent memory leaks after 1000 requests.
 exec gunicorn config.wsgi:application \
     --bind 0.0.0.0:8086 \
-    --workers 3 \
+    --workers ${GUNICORN_WORKERS:-9} \
+    --worker-class gthread \
+    --threads ${GUNICORN_THREADS:-4} \
+    --worker-tmp-dir /dev/shm \
     --timeout 120 \
+    --keepalive 5 \
+    --max-requests 1000 \
+    --max-requests-jitter 100 \
     --access-logfile - \
     --error-logfile -

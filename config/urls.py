@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.urls import include, path
 from django.contrib import admin
 
@@ -18,7 +18,6 @@ urlpatterns = [
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
-    path("silk/", include("silk.urls", namespace="silk")),
     # Override filebrowser stub: django-filebrowser is not installed and
     # TINYMCE_FILEBROWSER=False, so return empty JS instead of a 500 error.
     path("tinymce/filebrowser/", lambda request: HttpResponse("Error occured", content_type="application/javascript")),
@@ -39,7 +38,11 @@ urlpatterns = [
     path('api/hemis/', include('hemis.urls')),
     path('api/information-systems/', include('information_systems.urls')),
     path('api/v2/', api_router.urls),
-    
+
+    # Health check endpoint — used by Docker healthcheck, load balancers, uptime monitors.
+    # Returns 200 immediately without touching the database.
+    path('api/health/', lambda r: JsonResponse({'status': 'ok', 'service': 'nuujf-backend'})),
+
     # OpenAPI Schema and Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
@@ -54,6 +57,11 @@ if settings.DEBUG:
     # Serve static and media files from development server
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # Silk profiling UI — only when silk is actually in INSTALLED_APPS
+    # (added by dev.py; guard against DEBUG=True in other settings modules)
+    if 'silk' in settings.INSTALLED_APPS:
+        urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
 
 urlpatterns = urlpatterns + [
     # For anything not caught by a more specific rule above, hand over to

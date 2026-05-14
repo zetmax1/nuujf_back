@@ -87,7 +87,10 @@ class NewsViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
         return super().retrieve(request, *args, **kwargs)
     
     def get_queryset(self):
-        queryset = NewsPage.objects.live().public()
+        # select_related upfront to prevent N+1 on cover_image and locale
+        queryset = NewsPage.objects.live().public().select_related(
+            'cover_image', 'locale'
+        )
         
         # Filter by locale/language (optional - if not specified, return all)
         locale = self.request.query_params.get('locale')
@@ -102,7 +105,7 @@ class NewsViewSet(CachedViewMixin, viewsets.ReadOnlyModelViewSet):
         # Order: pinned first, then by date
         queryset = queryset.order_by('-is_pinned', '-published_date')
         
-        # Prefetch gallery images for detail view
+        # Prefetch gallery images only for detail view (heavy data)
         if self.action == 'retrieve':
             queryset = queryset.prefetch_related('gallery_images')
         

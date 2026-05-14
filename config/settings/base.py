@@ -74,7 +74,6 @@ INSTALLED_APPS = [
     'wagtail.api.v2',
     'rest_framework',
     'drf_spectacular',
-    'silk',
 ]
 
 MIDDLEWARE = [
@@ -86,7 +85,6 @@ MIDDLEWARE = [
     # "middleware.admin_protection.AdminIPWhitelistMiddleware",
 
     # ── Django / third-party middlewares ─────────────────────────
-    'silk.middleware.SilkyMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -319,12 +317,6 @@ CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='https://new.jbnuu
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
-SILKY_PYTHON_PROFILER = False  # Disabled: conflicts with Python 3.12's single-profiler limit
-SILKY_ANALYZE_QUERIES = False  # Disabled: SQLite doesn't support EXPLAIN ANALYZE
-
-# Exclude Wagtail admin and static JS from Silk profiling to suppress
-# "unable to parse text/javascript" warnings in the terminal.
-SILKY_INTERCEPT_FUNC = lambda request: not request.path.startswith('/admin/')
 
 
 
@@ -383,5 +375,10 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+        'KEY_PREFIX': 'nuujf',
+        'TIMEOUT': 60 * 10,  # 10 minutes default
+        # Note: django.core.cache.backends.redis.RedisCache (built-in) passes
+        # OPTIONS directly to redis-py. IGNORE_EXCEPTIONS / SOCKET_* are
+        # django-redis package options and must NOT be used here.
     }
 }
