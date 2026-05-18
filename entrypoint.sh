@@ -63,7 +63,7 @@ exec gunicorn config.wsgi:application \
     --threads ${GUNICORN_THREADS:-4} \
     --worker-tmp-dir /dev/shm \
     --timeout 120 \
-    --keepalive 5 \
+    --keep-alive 5 \
     --max-requests 1000 \
     --max-requests-jitter 100 \
     --access-logfile - \
