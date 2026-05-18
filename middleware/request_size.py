@@ -8,16 +8,18 @@ reaching the application. File-upload endpoints get a higher limit.
 from django.http import JsonResponse
 
 
-# 5 MB for file upload endpoints
-MAX_UPLOAD_SIZE = 5 * 1024 * 1024
+# 50 MB for file upload endpoints and admin CMS
+MAX_UPLOAD_SIZE = 30 * 1024 * 1024
 
-# 1 MB for all other (non-upload) requests
-MAX_BODY_SIZE = 1 * 1024 * 1024
+# 10 MB for all other (non-upload) requests
+MAX_BODY_SIZE = 10 * 1024 * 1024
 
 # Endpoints that accept file uploads — add new upload paths here
 UPLOAD_PATHS = (
     "/api/common/vacancies/apply/",
     "/api/appeals/submit/",
+    "/admin/",  # Wagtail CMS and Django Admin
+    "/tinymce/", # TinyMCE file uploads
 )
 
 
