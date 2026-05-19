@@ -207,6 +207,10 @@ STORAGES = {
 # can exceed this limit within Wagtail's page editor.
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
+# Increase maximum memory size for request body (default is 2.5MB)
+# This is necessary because TinyMCE uploads large images as base64 strings within the request body.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
+
 
 # Wagtail settings
 
