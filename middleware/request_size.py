@@ -8,11 +8,11 @@ reaching the application. File-upload endpoints get a higher limit.
 from django.http import JsonResponse
 
 
-# 50 MB for file upload endpoints and admin CMS
-MAX_UPLOAD_SIZE = 30 * 1024 * 1024
+# 60 MB for file upload endpoints and admin CMS
+MAX_UPLOAD_SIZE = 60 * 1024 * 1024
 
-# 10 MB for all other (non-upload) requests
-MAX_BODY_SIZE = 10 * 1024 * 1024
+# 20 MB for all other (non-upload) requests
+MAX_BODY_SIZE = 20 * 1024 * 1024
 
 # Endpoints that accept file uploads — add new upload paths here
 UPLOAD_PATHS = (
