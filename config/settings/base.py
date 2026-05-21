@@ -291,6 +291,10 @@ WAGTAIL_PASSWORD_RESET_ENABLED = True
 # see https://docs.wagtail.org/en/stable/advanced_topics/deploying.html#user-uploaded-files
 WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
+# Document serving — use 'direct' in production so Wagtail redirects to the
+# actual file URL served by Nginx (faster, bypasses Django for the file bytes).
+WAGTAILDOCS_SERVE_METHOD = config('WAGTAILDOCS_SERVE_METHOD', default='serve_view')
+
 LANGUAGES = [
     ('uz', 'O\'zbekcha'),
     ('ru', 'Русский'),
